@@ -1,0 +1,3358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="LiquidPro_SimpleForms" title="LiquidPro Simple Forms" version_string="2.1.9a" version_id="21903" url="https://liquidpro.net/xenforo-addons/simple-forms/" install_callback_class="LiquidPro_SimpleForms_Version" install_callback_method="Install" uninstall_callback_class="LiquidPro_SimpleForms_Version" uninstall_callback_method="Uninstall">
+  <admin_navigation>
+    <navigation navigation_id="createForm" parent_navigation_id="simpleForms" display_order="60" link="forms/add" admin_permission_id="form" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="displaySimpleForms" parent_navigation_id="simpleForms" display_order="1" link="forms" admin_permission_id="form" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="documentation" parent_navigation_id="simpleForms" display_order="99999" link="forms/documentation" admin_permission_id="form" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="globalFields" parent_navigation_id="simpleForms" display_order="80" link="fields/globals" admin_permission_id="form" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="simpleForms" parent_navigation_id="applications" display_order="100" link="forms" admin_permission_id="form" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="templateFields" parent_navigation_id="simpleForms" display_order="70" link="fields/templates" admin_permission_id="form" debug_only="0" hide_no_children="0"/>
+  </admin_navigation>
+  <admin_permissions>
+    <admin_permission admin_permission_id="form" display_order="2000"/>
+  </admin_permissions>
+  <admin_style_properties/>
+  <admin_templates>
+    <template title="destination_options.css"><![CDATA[#fieldHelper {
+	display:none;
+	background-color: #FCFCFF;
+	border: 1px solid #65A5D1;
+	border-radius: 5px 5px 5px 5px;
+	box-shadow: 0 0 15px #666666;
+	font-size: 11px;
+	padding: 2px;
+	width: 198px;
+	z-index: 7500;
+	position: absolute;
+	right: -168px;
+}
+#fieldHelper span.close {
+	float: right;	
+}
+#fieldHelper span.close a {
+    background: url("styles/default/xenforo/permissions/deny.png") no-repeat scroll center center transparent;
+    cursor: pointer;
+    display: block;
+    height: 20px;
+    overflow: hidden;
+    padding: 5px;
+    text-indent: -1000px;
+    white-space: nowrap;
+    width: 20px;	
+}
+#fieldHelper span.title {
+    color: #65A5D1;
+    float: left;
+    font-size: 11pt;
+    line-height: 20px;
+	padding:5px;	
+}
+#fieldHelper ul.fields {
+	clear: both;
+	padding: 5px !important;
+	margin: 0 !important;
+}
+#fieldHelper ul.fields li {
+	list-style: none !important;
+	line-height: 20px !important;
+	padding: 0 0 5px 0 !important;	
+}]]></template>
+    <template title="destination_options_edit"><![CDATA[<xen:foreach loop="$formDestination.options" value="$option">
+
+	<xen:if is="{$option.field_type} == 'textbox'">
+		<xen:textboxunit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+			name="destination_options[{$formDestination.form_destination_id}][{$option.option_id}]" id="ctrl_destination_options_{$formDestination.form_destination_id}_{$option.option_id}"
+			value="{$option.option_value}" maxlength="{xen:if $option.max_length, $option.max_length}" inputclass="{xen:if $option.format_params.inputClass, $option.format_params.inputClass }" data-acDisplay="{xen:if $option.format_params.data-acDisplay, $option.format_params.data-acDisplay}" data-acUrl="{xen:if $option.format_params.data-acUrl, {xen:adminlink $option.format_params.data-acUrl} }"
+		/>
+	<xen:elseif is="{$option.field_type} == 'textarea'" />
+		<xen:textboxunit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+			name="destination_options[{$formDestination.form_destination_id}][{$option.option_id}]" id="ctrl_destination_options_{$formDestination.form_destination_id}_{$option.option_id}"
+			value="{$option.option_value}" rows="2" inputclass="{xen:if $option.format_params.inputClass, $option.format_params.inputClass }"
+		/>
+	<xen:elseif is="{$option.field_type} == 'radio'" />
+		<xen:radiounit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+			name="destination_options[{$formDestination.form_destination_id}][{$option.option_id}]" id="ctrl_destination_options_{$formDestination.form_destination_id}_{$option.option_id}" value="{$option.option_value}"
+		>
+			<xen:options source="$option.destinationOptionChoices" />
+		</xen:radiounit>
+	<xen:elseif is="{$option.field_type} == 'select'" />
+		<xen:selectunit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+			name="destination_options[{$formDestination.form_destination_id}][{$option.option_id}]" id="ctrl_destination_options_{$formDestination.form_destination_id}_{$option.option_id}" value="{$option.option_value}"
+		>
+			<xen:option value="">&nbsp;</xen:option>
+			<xen:options source="$option.field_choices" />
+		</xen:selectunit>
+	<xen:elseif is="{$option.field_type} == 'checkbox'" />
+		<xen:checkboxunit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+			name="destination_options[{$formDestination.form_destination_id}][{$option.option_id}]" id="ctrl_destination_options_{$formDestination.form_destination_id}_{$option.option_id}" value="{$option.option_value}"
+		>
+			<xen:foreach loop="$option.destinationOptionChoices" key="$_choiceId" value="$_choice">
+				<xen:option value="{$_choiceId}" selected="isset({$option.option_value.{$_choiceId}})">{$_choice}</xen:option>
+			</xen:foreach>
+		</xen:checkboxunit>
+	<xen:elseif is="{$option.field_type} == 'multiselect'" />
+		<xen:selectunit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+			name="destination_options[{$formDestination.form_destination_id}][{$option.option_id}]" id="ctrl_destination_options_{$formDestination.form_destination_id}_{$option.option_id}" value="{xen:raw $option.option_value}"
+			size="7" multiple="multiple"
+		>
+			<xen:option value="">&nbsp;</xen:option>
+			<xen:options source="$option.destinationOptionChoices" />
+		</xen:selectunit>
+	<xen:elseif is="{$option.field_type} == 'array'" />
+		<dl class="ctrlUnit">
+			<dt>{xen:if "{$option.title} != ''", '{$option.title}:', ''}</dt>
+			<dd>
+				<ul class="PollResponseContainer">
+					<xen:foreach loop="$option.option_value" value="$choice">
+						<li><input type="text" name="destination_options[{$formDestination.form_destination_id}][{$option.option_id}][]" class="textCtrl" placeholder="{xen:phrase poll_choice}..." maxlength="100" value="{xen:raw $choice}" /></li>
+					</xen:foreach>
+					<li><input type="text" name="destination_options[{$formDestination.form_destination_id}][{$option.option_id}][]" class="textCtrl" placeholder="{xen:phrase poll_choice}..." maxlength="100" /></li>
+					<li><input type="text" name="destination_options[{$formDestination.form_destination_id}][{$option.option_id}][]" class="textCtrl" placeholder="{xen:phrase poll_choice}..." maxlength="100" /></li>
+				</ul>
+				<input type="button" value="{xen:phrase add_additional_response}" class="button smallButton FieldAdder JsOnly" data-source="ul.PollResponseContainer li" data-maxfields="{$xenOptions.pollMaximumResponses}" />
+			</dd>
+		</dl>
+	<xen:elseif is="{$option.field_type} == 'callback'" />
+		{xen:raw $option.preparedOption}
+	</xen:if>
+
+	<input type="hidden" name="destination_options_shown[{$formDestination.form_destination_id}][]" value="{$option.option_id}" />
+</xen:foreach>]]></template>
+    <template title="field_edit.css"><![CDATA[td.mceIframeContainer iframe{min-height:214px;}
+.sortable-item {background:url({xen:property imagePath}/liquidpro/simpleforms/acp-icons/arrow_ns.png) no-repeat 415px 50%;}
+.ui-state-highlight {height:25px;line-height:25px;background:#f0f7fc url('styles/default/xenforo/gradients/form-button-white-25px.png') repeat-x top;border:1px solid #A5CAE4;}]]></template>
+    <template title="field_edit.js"><![CDATA[<script type="text/javascript">
+$(function() {
+	$("#sortable").sortable({
+		items: "li:not(.ui-state-disabled)",
+		placeholder: "ui-state-highlight"
+	});
+});
+</script>]]></template>
+    <template title="lpsf_destination_delete"><![CDATA[<xen:title>{xen:phrase confirm_deletion_of_destination}: {$destination.name}</xen:title>
+<xen:h1>{xen:phrase confirm_deletion_of_destination}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'destinations', $destination}">{$destination.name}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'destinations/delete'}" class="deleteConfirmForm formOverlay">
+	<p>{xen:phrase please_confirm_want_to_delete_destination}:</p>
+	<strong><a href="{xen:adminlink 'destinations/edit', $destination}">{$destination.name}</a></strong>
+
+	<input type="hidden" name="destination_id" value="{$destination.destination_id}" />
+	<input type="hidden" name="_xfConfirm" value="1" />
+
+	<xen:submitunit save="{xen:phrase delete_destination}" />
+</xen:form>]]></template>
+    <template title="lpsf_destination_edit"><![CDATA[<xen:title>{xen:if {$destination.destination_id}, '{xen:phrase edit_destination}: {$destination.name}', '{xen:phrase create_new_destination}'}</xen:title>
+
+<xen:if is="{$destination.destination_id}">
+	<xen:navigation>
+		<xen:breadcrumb href="{xen:adminlink destinations}#{xen:helper listitemid, $destination.destination_id}">{$destination.name}</xen:breadcrumb>
+	</xen:navigation>
+</xen:if>
+
+<xen:form action="{xen:adminlink 'destinations/save', $destination}"
+	class="AutoValidator"
+	data-fieldValidatorUrl="{xen:adminlink 'destinations/validate-field', $destination}"
+	data-redirect="yes">
+
+	<fieldset>
+		<xen:textboxunit name="name" value="{$destination.name}" label="{xen:phrase lpsf_destination_name}:" data-liveTitleTemplate="{xen:if {$destination.destination_id},
+			'{xen:phrase edit_destination}: <em>%s</em>',
+			'{xen:phrase create_new_destination}: <em>%s</em>'}">
+		</xen:textboxunit>
+	</fieldset>
+	
+	<fieldset>	
+		<xen:textboxunit name="display_order" value="{$destination.display_order}" label="{xen:phrase display_order}:">
+		</xen:textboxunit>
+
+		<xen:textboxunit name="handler_class" value="{$destination.handler_class}" label="{xen:phrase handler_class}:">
+		</xen:textboxunit>
+	</fieldset>
+	
+	<xen:submitunit save="{xen:phrase save_destination}">
+		<xen:if is="{$destination.destination_id}">
+			<input type="button" value="{xen:phrase delete_destination}..." accesskey="d" class="button OverlayTrigger"
+				data-href="{xen:adminlink destinations/delete, $destination}"  />
+		</xen:if>
+	</xen:submitunit>
+
+</xen:form>]]></template>
+    <template title="lpsf_destination_list"><![CDATA[<xen:title>{xen:phrase destinations}</xen:title>
+
+<xen:topctrl>
+	<a href="{xen:adminlink 'destinations/add'}" class="button" accesskey="a">+ {xen:phrase create_new_destination}</a>
+</xen:topctrl>
+
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+
+<xen:form action="{xen:adminlink destinations}" class="section">
+	<xen:if is="{$destinations}">
+
+		<h2 class="subHeading">
+			<xen:include template="filter_list_controls" />
+			{xen:phrase destinations}
+		</h2>
+
+		<ol class="FilterList Scrollable">
+			<xen:foreach loop="$destinations" value="$destination">
+				<xen:listitem
+					id="{$destination.destination_id}"
+					label="{$destination.name}"
+					href="{xen:adminlink 'destinations/edit', $destination}"
+					delete="{xen:adminlink 'destinations/delete', $destination}">
+				</xen:listitem>
+			</xen:foreach>
+		</ol>
+
+		<p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $destinations}</span>', 'total={xen:count $destinations}'}</p>
+
+	<xen:else />
+
+		<div class="noResults">{xen:phrase there_no_destinations_defined}</div>
+
+	</xen:if>
+</xen:form>]]></template>
+    <template title="lpsf_destination_option_thread_poll"><![CDATA[<xen:container var="$head.pollCss"><style>.hasJs .PollNonJsInput { display: none }</style></xen:container>
+
+<dl class="ctrlUnit">
+	<dt><label for="ctrl_poll_question">{xen:phrase question}:</label></dt>
+	<dd><input type="text" name="destination_options[{$option.option_id}][question]" class="textCtrl FormFieldHelper" id="ctrl_poll_question" value="{$option.option_value.question}" maxlength="100" /></dd>
+</dl>
+<dl class="ctrlUnit">
+	<dt>{xen:phrase possible_responses}:</dt>
+	<dd>
+		<ul class="PollResponseContainer">
+		<xen:if is="{$option.option_value.responses}">
+			<xen:foreach loop="$option.option_value.responses" key="$pollResponseId" value="$response">
+				<li>
+					<input type="text" name="destination_options[{$option.option_id}][responses][{$pollResponseId}]" value="{$response}" class="textCtrl" placeholder="{xen:phrase poll_choice}..." maxlength="100" />
+				</li>
+			</xen:foreach>
+		</xen:if>
+		<xen:if is="{xen:count $option.option_value.responses} < {$xenOptions.pollMaximumResponses}">
+			<li><input type="text" name="destination_options[{$option.option_id}][responses][]" class="textCtrl" placeholder="{xen:phrase poll_choice}..." maxlength="100" /></li>
+		</xen:if>
+		</ul>
+		<input type="button" value="{xen:phrase add_additional_response}" class="FieldAdder button smallButton" data-source="ul.PollResponseContainer li" data-maxfields="{$xenOptions.pollMaximumResponses}" />
+	</dd>
+</dl>
+
+<!-- slot: after_poll_responses -->
+<xen:if is="{$xenOptions.currentVersionId} >= 1040000">
+	<dl class="ctrlUnit">
+		<dt>{xen:phrase maximum_selectable_responses}:</dt>
+		<dd>
+			<ul>
+				<xen:if is="{$option.option_value.max_votes} == 1">
+					<li><label><input type="radio" name="destination_options[{$option.option_id}][max_votes_type]" value="single" {xen:checked '{$option.option_value.max_votes} == 1'} /> {xen:phrase single_choice}</label></li>
+				</xen:if>
+				<li><label><input type="radio" name="destination_options[{$option.option_id}][max_votes_type]" value="unlimited" {xen:checked '{$option.option_value.max_votes} == 0'} /> {xen:phrase unlimited}</label></li>
+				<li><input type="radio" name="destination_options[{$option.option_id}][max_votes_type]" value="number" class="Disabler" id="ctrl_max_votes_type_value" {xen:checked '{$option.option_value.max_votes} > 1'} /> 
+					<span id="ctrl_max_votes_type_value_Disabler">
+						<input type="number" class="textCtrl number SpinBox" name="max_votes_value" value="{xen:if '{$option.option_value.max_votes} > 1', $option.option_value.max_votes, 2}" min="1" step="1" />
+					</span>
+				</li>
+			</ul>
+			<p class="explain">
+				{xen:phrase this_is_maximum_number_responses_voter_may_select}
+			</p>
+		</dd>
+	</dl>
+</xen:if>
+
+<dl class="ctrlUnit">
+	<dt>{xen:phrase options}:</dt>
+	<dd>
+		<ul>
+			<xen:if is="{$xenOptions.currentVersionId} >= 1040000">
+				<li><label><input type="checkbox" name="destination_options[{$option.option_id}][change_vote]" value="1" {xen:checked '{$option.option_value.change_vote} == 1'} /> {xen:phrase allow_voters_to_change_their_votes}</label></li>
+			</xen:if>
+			
+			<xen:if is="{$xenOptions.currentVersionId} < 1040000">
+				<li><label for="ctrl_poll_multiple"><input type="checkbox" name="destination_options[{$option.option_id}][multiple]" value="1" id="ctrl_poll_multiple" {xen:checked '{$option.option_value.max_votes} == 0'} /> {xen:phrase allow_selection_of_multiple_responses}</label></li>
+			</xen:if>
+
+			<li><label><input type="checkbox" name="destination_options[{$option.option_id}][public_votes]" value="1" {xen:checked '{$option.option_value.public_votes} == 1'} /> {xen:phrase display_votes_publicly}</label></li>
+
+			<xen:if is="{$xenOptions.currentVersionId} >= 1040000">
+				<li><label><input type="checkbox" name="destination_options[{$option.option_id}][view_results_unvoted]" value="1" {xen:checked '{$option.option_value.view_results_unvoted} == 1'} /> {xen:phrase allow_results_to_be_viewed_without_voting}</label></li>
+			</xen:if>
+
+			<li><label><input type="checkbox" name="destination_options[{$option.option_id}][close]" value="1" class="Disabler" id="ctrl_poll_close" {xen:checked '{$option.option_value.close} > 0'} /> {xen:phrase close_this_poll_after}:</label>
+				<ul id="ctrl_poll_close_Disabler">
+					<li>
+						<input type="text" size="5" name="destination_options[{$option.option_id}][close_length]" value="{$option.option_value.close_length}" class="textCtrl autoSize" />
+						<select name="destination_options[{$option.option_id}][close_units]" class="textCtrl autoSize">
+							<option value="hours" {xen:if "{$option.option_value.close_units} == 'hours'", 'selected="selected"'}>{xen:phrase hours}</option>
+							<option value="days" {xen:if "{$option.option_value.close_units} == 'days'", 'selected="selected"'}>{xen:phrase days}</option>
+							<option value="weeks" {xen:if "{$option.option_value.close_units} == 'weeks'", 'selected="selected"'}>{xen:phrase weeks}</option>
+							<option value="months" {xen:if "{$option.option_value.close_units} == 'months'", 'selected="selected"'}>{xen:phrase months}</option>
+						</select>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</dd>
+</dl>]]></template>
+    <template title="lpsf_destination_option_thread_prefix"><![CDATA[<xen:selectunit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+	name="destination_options[{$option.option_id}]" id="ctrl_destination_options_{$option.option_id}" value="{$option.option_value}"
+>
+	<xen:option value="">&nbsp;</xen:option>
+	<xen:options source="$option.field_choices" />
+</xen:selectunit>]]></template>
+    <template title="lpsf_field_add_type"><![CDATA[<xen:title>{xen:phrase add_field}</xen:title>
+
+<xen:form action="{xen:adminlink 'fields/add'}">
+
+	<xen:radiounit name="type" label="{xen:phrase field_type}:" hint="{xen:phrase what_kind_of_field_do_you_want_to_add}">
+		<xen:options source="$options" selected="user" />
+	</xen:radiounit>
+
+	<input type="hidden" name="form_id" value="{$formId}" />
+
+	<xen:submitunit save="{xen:phrase proceed}..." />
+
+</xen:form>]]></template>
+    <template title="lpsf_field_delete"><![CDATA[<xen:title>{xen:phrase confirm_deletion_of_field}: {$field.name}</xen:title>
+<xen:h1>{xen:phrase confirm_deletion_of_field}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'fields/edit', $field}">{$field.name}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'fields/delete'}" class="deleteConfirmForm formOverlay">
+	<p>{xen:phrase please_confirm_want_to_delete_field}:</p>
+	<strong><a href="{xen:adminlink 'fields/edit', $field}">{$field.title}</a></strong>
+
+	<input type="hidden" name="field_id" value="{$field.field_id}" />
+	<input type="hidden" name="_xfConfirm" value="1" />
+	<input type="hidden" name="form_id" value="{$field.form_id}">
+
+	<xen:submitunit save="{xen:phrase delete_field}" />
+</xen:form>]]></template>
+    <template title="lpsf_field_edit"><![CDATA[<xen:require css="public:editor_ui.css" />
+<xen:require css="public:lpsf_jquery_timepicker.css" />
+<xen:require css="field_edit.css" />
+
+<xen:include template="field_edit.js" />
+<xen:require js="js/liquidpro/simpleforms/jquery.timepicker.js" />
+<xen:require js="js/liquidpro/simpleforms/simpleforms.js" />
+<xen:require js="js/liquidpro/simpleforms/jquery-ui.custom.js" />
+
+<xen:if is="{$field.type} == 'user'">
+	<xen:title>{xen:if {$field.field_id}, '{xen:phrase edit_field}: {$field.title}', '{xen:phrase create_new_field}'}</xen:title>
+
+	<xen:navigation>
+		<xen:breadcrumb href="{xen:adminlink forms/edit, $form}#{xen:helper listitemid, $form.form_id}">{$form.title}</xen:breadcrumb>
+		<xen:breadcrumb href="{xen:adminlink fields/edit, $field}#{xen:helper listitemid, $field.field_name}">{$field.title}</xen:breadcrumb>
+	</xen:navigation>
+<xen:elseif is="{$field.type} == 'global'" />
+	<xen:title>{xen:if {$field.field_id}, '{xen:phrase edit_global_field}: {$field.title}', '{xen:phrase create_new_global_field}'}</xen:title>
+
+	<xen:if is="{$field.field_id}">
+		<xen:navigation>
+			<xen:breadcrumb href="{xen:adminlink fields/globals}">{xen:phrase global_fields}</xen:breadcrumb>
+			<xen:breadcrumb href="{xen:adminlink fields/edit, $field}#{xen:helper listitemid, $field.field_name}">{$field.title}</xen:breadcrumb>
+		</xen:navigation>
+	<xen:else />
+		<xen:navigation>
+			<xen:breadcrumb href="{xen:adminlink fields/globals}">{xen:phrase global_fields}</xen:breadcrumb>
+		</xen:navigation>
+	</xen:if>
+<xen:else />
+	<xen:title>{xen:if {$field.field_id}, '{xen:phrase edit_template_field}: {$field.title}', '{xen:phrase create_new_template_field}'}</xen:title>
+
+	<xen:if is="{$field.field_id}">
+		<xen:navigation>
+			<xen:breadcrumb href="{xen:adminlink fields/templates}">{xen:phrase template_fields}</xen:breadcrumb>
+			<xen:breadcrumb href="{xen:adminlink fields/edit, $field}#{xen:helper listitemid, $field.field_name}">{$field.title}</xen:breadcrumb>
+		</xen:navigation>
+	<xen:else />
+		<xen:navigation>
+			<xen:breadcrumb href="{xen:adminlink fields/templates}">{xen:phrase template_fields}</xen:breadcrumb>
+		</xen:navigation>
+	</xen:if>
+</xen:if>
+
+<xen:form action="{xen:adminlink 'fields/save', $field}" class="AutoValidator" data-redirect="on">
+	<ul class="tabs Tabs" data-panes="#userFieldPanes > li">
+		<xen:hook name="admin_field_edit_tabs">
+		<li class="active"><a>{xen:phrase basic_information}</a></li>
+
+		<!-- slot: after_basic_information -->
+
+		<xen:if is="!{$field.parent_field_id}">
+			<xen:if is="!{$existingType} OR {$existingType} == 'text'">
+				<li><a>{xen:phrase options_for_text_fields}</a></li>
+			</xen:if>
+		</xen:if>
+
+		<!-- slot: after_options_for_text_fields -->
+
+		<xen:if is="!{$field.parent_field_id}">
+			<xen:if is="!{$existingType} OR {$existingType} == 'single' OR {$existingType} == 'multiple'">
+				<li><a>{xen:phrase options_for_choice_fields}</a></li>
+			</xen:if>
+		</xen:if>
+
+		<!-- slot: after_options_for_choice_fields -->
+
+		<li><a>{xen:phrase general_options}</a></li>
+
+		<!-- slot: after_general_information -->
+
+		</xen:hook>
+	</ul>
+	
+	<ul id="userFieldPanes">
+		<xen:hook name="admin_field_edit_panes">
+		<li>
+			<xen:hook name="field_edit_basic_information">
+
+			<!-- slot: before_field_id -->
+				
+			<xen:textboxunit label="{xen:phrase field_id}:" name="field_name" value="{$field.field_name}">
+				<xen:explain>{xen:phrase lpsf_this_is_unique_identifier_for_field}</xen:explain>
+			</xen:textboxunit>
+	
+			<!-- slot: after_field_id -->
+
+			<xen:if hascontent="true">
+				<fieldset>
+					<xen:contentcheck>
+	
+					<xen:if is="{$field.type} != 'global'">
+						<!-- slot: before_title -->
+							
+						<xen:textboxunit label="{xen:phrase title}:" name="title" value="{$masterTitle}" data-liveTitleTemplate="{xen:if {$field.field_id},
+							'{xen:phrase edit_field}: <em>%s</em>',
+							'{xen:phrase create_new_field}: <em>%s</em>'}" />
+							
+						<!-- slot: after_title-->
+					</xen:if>
+	
+					<xen:if is="{$field.type} != 'global'">
+						<xen:checkboxunit label="">
+							<xen:option name="hide_title" selected="{$field.hide_title}">{xen:phrase hide_title}</xen:option>
+						</xen:checkboxunit>
+		
+						<!-- slot: after_hide_title -->
+					</xen:if>
+	
+					<xen:if is="{$field.type} != 'global'">
+						<xen:textboxunit label="{xen:phrase description}:" name="description" value="{$masterDescription}" rows="2" inputclass="Elastic" />
+		
+						<!-- slot: after_description -->
+					</xen:if>
+	
+					<xen:if is="{$field.type} != 'global' AND {$field.type} != 'template'">
+						<xen:checkboxunit label="">
+							<xen:option name="active" selected="{$field.active}">{xen:phrase field_is_active}</xen:option>
+						</xen:checkboxunit>
+		
+						<!-- slot: after_active -->
+					</xen:if>
+					
+					</xen:contentcheck>
+				</fieldset>
+			</xen:if>
+
+			<xen:if hascontent="true">
+				<fieldset>
+					<xen:contentcheck>
+
+					<xen:if is="{$field.type} != 'global'">
+						<!-- slot: before_display_order -->
+					
+						<xen:spinboxunit label="{xen:phrase display_order}:" name="display_order" value="{$field.display_order}" min="0" />
+						
+						<!-- slot: after_display_order -->
+					</xen:if>
+					
+					</xen:contentcheck>
+				</fieldset>
+				</xen:if>
+			
+			<xen:if is="!{$existingType}">
+				<fieldset>
+					<!-- slot: before_field_type -->
+
+					<xen:radiounit label="{xen:phrase field_type}:" name="field_type" value="{$field.field_type}">
+						<xen:options source="$validFieldTypes" />
+					</xen:radiounit>
+
+					<!-- slot: after_field_type -->
+				</fieldset>
+			</xen:if>
+			
+			<xen:if hascontent="true">
+				<fieldset>
+					<xen:contentcheck>
+						<xen:if is="{$field.type} != 'global'">
+							<!-- slot: before_pre_text -->
+							<dl class="ctrlUnit">
+								<dt>
+									<label for="pre_text">{xen:phrase lpsf_pre_text}:</label>
+								</dt>
+								<dd>
+									{xen:raw $preTextEditor}
+								</dd>
+							</dl>
+						</xen:if>
+			
+						<xen:if is="{$field.type} != 'global'">				
+							<!-- slot: before_post_text -->
+							<dl class="ctrlUnit">
+								<dt>
+									<label for="post_text">{xen:phrase lpsf_post_text}:</label>
+								</dt>
+								<dd>
+									{xen:raw $postTextEditor}
+								</dd>
+							</dl>				
+							
+							<!-- slot: after_post_text -->
+						</xen:if>
+					</xen:contentcheck>
+				</fieldset>
+			</xen:if>
+
+			</xen:hook>
+		</li>	
+
+		<!-- slot: after_basic_information -->
+
+		<xen:if is="{$existingType} == 'rating'">
+			<input type="hidden" name="field_type" value="{$field.field_type}"/>
+		</xen:if>
+
+		<xen:if is="!{$existingType} OR {$existingType} == 'text'">
+		<xen:hook name="field_edit_options_for_text_fields">
+			<xen:if hascontent="true">
+			<li>
+				<xen:contentcheck>
+					<xen:if is="!{$field.parent_field_id}">
+						<xen:if is="{$existingType}">
+							<!-- slot: before_text_field_type -->
+		
+							<xen:radiounit label="{xen:phrase field_type}:" name="field_type" value="{$field.field_type}">
+								<xen:options source="$validFieldTypes" />
+							</xen:radiounit>
+		
+							<!-- slot: after_text_field_type -->
+						</xen:if>
+					</xen:if>
+	
+					<xen:if is="!{$field.parent_field_id}">
+						<fieldset>
+							<!-- slot: before_match_type -->
+			
+							<xen:radiounit label="{xen:phrase value_match_requirements}:" name="match_type" value="{$field.match_type}" hint="{xen:phrase empty_values_always_allowed}">
+								<xen:option value="none">{xen:phrase none}</xen:option>
+								<xen:option value="number">{xen:phrase number}</xen:option>
+								<xen:option value="alphanumeric">{xen:phrase a_z_0_9_and_only}</xen:option>
+								<xen:option value="email">{xen:phrase email_address}</xen:option>
+								<xen:option value="url">URL</xen:option>
+								<xen:option value="regex" label="{xen:phrase regular_expression}:">
+									<xen:textbox name="match_regex" value="{$field.match_regex}" />
+								</xen:option>
+								<xen:option value="callback" label="{xen:phrase php_callback}:">
+									<xen:disabled>
+										<xen:textbox name="match_callback_class" value="{$field.match_callback_class}" placeholder="{xen:phrase class}" size="25" />
+										::
+										<xen:textbox name="match_callback_method" value="{$field.match_callback_method}" placeholder="{xen:phrase method}" size="25" />
+									</xen:disabled>
+								</xen:option>
+							</xen:radiounit>
+		
+							<!-- slot: after_match_type -->
+						</fieldset>
+					</xen:if>
+	
+					<xen:if is="!{$field.parent_field_id}">
+						<fieldset>
+							<!-- slot: before_minimum_length -->
+							<xen:spinboxunit label="{xen:phrase minimum_length}:" name="min_length" value="{$field.min_length}" min="0" />
+		
+							<!-- slot: after_minimum_length -->
+			
+							<xen:spinboxunit label="{xen:phrase maximum_length}:" name="max_length" value="{$field.max_length}" min="0" />
+			
+							<!-- slot: after_maximum_length -->
+						</fieldset>
+					</xen:if>
+				</xen:contentcheck>
+			</li>
+			</xen:if>
+
+			<!-- slot: after_options_for_text_fields -->
+			</xen:hook>
+		<xen:else />
+			<input type="hidden" name="match_type" value="none" />
+		</xen:if>
+
+		<xen:if is="!{$field.parent_field_id}">
+			<xen:if is="!{$existingType} OR {$existingType} == 'single' OR {$existingType} == 'multiple'">
+				<li>
+					<xen:hook name="admin_field_edit_options_for_choice_fields">
+					<xen:if is="{$existingType}">
+						<!-- slot: before_choice_field_type -->
+	
+						<xen:radiounit label="{xen:phrase field_type}:" name="field_type" value="{$field.field_type}">
+							<xen:options source="$validFieldTypes" />
+						</xen:radiounit>
+	
+						<!-- slot: after_choice_field_type -->
+					</xen:if>
+					
+					<fieldset>
+						<!-- slot: before_field_choices -->
+	
+						<xen:controlunit label="{xen:phrase possible_choices}:">
+							<ul class="FieldChoices" id="sortable">
+								<xen:foreach loop="$masterFieldChoices" key="$choice" value="$text">
+									<li class="sortable-item">
+										<input type="text" name="field_choice[]" value="{$choice}" class="textCtrl" placeholder="{xen:phrase value_a_z_0_9_and_only}" size="25" maxlength="25" />
+										<input type="text" name="field_choice_text[]" value="{$text}" class="textCtrl" placeholder="{xen:phrase text}" size="25" />
+									</li>
+								</xen:foreach>
+								<li class="ui-state-disabled">
+									<input type="text" name="field_choice[]" class="textCtrl" placeholder="{xen:phrase value_a_z_0_9_and_only}" size="25" maxlength="25" />
+									<input type="text" name="field_choice_text[]" class="textCtrl" placeholder="{xen:phrase text}" size="25" />
+								</li>
+							</ul>
+							<input type="button" value="{xen:phrase add_additional_choice}" class="button smallButton FieldAdder" data-source="ul.FieldChoices li" />
+							<p class="explain">{xen:phrase value_represents_internal_value_for_choice_text_is_displayed}</p>
+						</xen:controlunit>
+	
+						<!-- slot: after_field_choices -->
+					</fieldset>
+					</xen:hook>
+				</li>
+	
+				<!-- slot: after_options_for_choice_fields -->
+			</xen:if>
+		</xen:if>
+
+		<li>
+			<xen:hook name="admin_field_edit_general_information">
+			
+				<xen:if is="{$field.type} != 'global' AND {$field.type} != 'template'">
+					<!-- slot: before_required -->
+	
+					<xen:checkboxunit label="">
+						<xen:option name="required" selected="{$field.required}" label="{xen:phrase field_is_required}">
+							<xen:hint>{xen:phrase required_fields_will_always_be_shown_during_registration}</xen:hint>
+						</xen:option>
+					</xen:checkboxunit>
+	
+					<!-- slot: after_required -->
+				</xen:if>
+				
+				<xen:if is="!{$field.parent_field_id}">
+					<xen:if is="(!{$existingType} OR {$existingType} == 'text') AND {$field.field_type} != 'wysiwyg' AND {$field.field_type} != 'date' AND {$field.field_type} != 'datetime' AND {$field.field_type} != 'time'">
+						<xen:textboxunit label="{xen:phrase placeholder}:" name="placeholder" value="{$field.placeholder}">
+							<xen:explain>{xen:phrase placeholder_for_field}</xen:explain>
+						</xen:textboxunit>
+					</xen:if>
+				</xen:if>
+					
+				<!-- slot: after_placeholder -->
+
+				<xen:if is="{$field.type} != 'global'">				
+					<xen:if is="{$field.field_type} == 'wysiwyg'">
+						<dl class="ctrlUnit">
+							<dt>
+								<label for="ctrl_field_{$field.field_id}">{xen:phrase default_value}:</label>
+							</dt>
+							<dd>
+								{xen:raw $field.editor}
+							</dd>
+						</dl>
+					<xen:elseif is="{$field.field_type} == 'date'" />
+						<dl class="ctrlUnit">
+							<dt>
+								<label for="ctrl_default_value">{xen:phrase default_value}:</label>
+							</dt>
+							<dd>
+								<input type="date" name="default_value" id="ctrl_default_value" size="10" class="textCtrl" value="{$field.default_value}" />
+							</dd>
+						</dl>		
+					<xen:elseif is="{$field.field_type} == 'datetime'" />
+						<dl class="ctrlUnit">
+							<dt>
+								<label for="ctrl_default_value_date">{xen:phrase default_value}:</label>
+							</dt>
+							<dd>
+								<input type="date" name="default_value[date]" id="ctrl_default_value_date" size="10" class="textCtrl" value="{$field.default_value.date}" />
+								<input type="text" name="default_value[time]" id="ctrl_default_value_time" size="10" class="textCtrl lpsfTimePicker" value="{$field.default_value.time}" />								
+							</dd>
+						</dl>					
+					<xen:elseif is="{$field.field_type} == 'time'" />
+						<dl class="ctrlUnit">
+							<dt>
+								<label for="ctrl_default_value">{xen:phrase default_value}:</label>
+							</dt>
+							<dd>
+								<input type="text" name="default_value" id="ctrl_default_value" size="10" class="textCtrl lpsfTimePicker" value="{$field.default_value}" />
+							</dd>
+						</dl>												
+					<xen:elseif is="!{$field.field_id} OR {$field.field_type} == 'textarea'" />
+						<xen:textboxunit label="{xen:phrase default_value}:" name="default_value" rows="4" value="{$field.default_value}">
+							<xen:explain>{xen:phrase default_value_for_field}</xen:explain>
+						</xen:textboxunit>
+					<xen:else />
+						<xen:textboxunit label="{xen:phrase default_value}:" name="default_value" value="{$field.default_value}">
+							<xen:explain>{xen:phrase default_value_for_field}</xen:explain>
+						</xen:textboxunit>
+					</xen:if>
+					
+					<!-- slot: after_default_value -->
+				</xen:if>
+			</xen:hook>
+		</li>
+		</xen:hook>
+	</ul>
+	
+	<xen:if is="{$field.type} == 'user'">
+		<input type="hidden" name="form_id" value="{$field.form_id}" />
+	</xen:if>
+	<input type="hidden" name="type" value="{$field.type}" />
+
+	<xen:submitunit save="{xen:phrase save_field}">
+		<xen:if is="{$field.field_id}">
+			<input type="button" value="{xen:phrase delete_field}..." accesskey="d" class="button OverlayTrigger"
+				data-href="{xen:adminlink 'fields/delete', $field}" />
+		</xen:if>
+	</xen:submitunit>
+</xen:form>]]></template>
+    <template title="lpsf_field_globals_list"><![CDATA[<xen:title>{xen:phrase global_fields}</xen:title>
+
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+
+<xen:topctrl>
+	<a href="{xen:adminlink 'fields/add', '', 'type=global'}" class="button" accesskey="f">+ {xen:phrase add_global_field}</a>
+</xen:topctrl>
+
+<xen:form action="{xen:adminlink fields/templates}" class="section">
+	<xen:if is="{$globals}">
+		<h2 class="subHeading">
+			<xen:include template="filter_list_controls" />
+			{xen:phrase global_fields}
+		</h2>
+	
+		<ol class="FilterList">
+			<xen:foreach loop="$globals" value="$field">
+				<xen:listitem
+					id="field_{$field.field_id}"
+					label="{$field.title}"
+					href="{xen:adminlink fields/edit, $field}"
+					delete="{xen:adminlink fields/delete, $field}">
+					<xen:popup title="{xen:phrase controls}" ctrlclass="toolsCtrl">
+						<xen:link href="{xen:adminlink 'fields/delete', $field}">{xen:phrase delete}</xen:link>
+						<xen:link href="{xen:adminlink 'fields/edit', $field}">{xen:phrase edit}</xen:link>
+					</xen:popup>
+				</xen:listitem>
+			</xen:foreach>
+		</ol>
+	            
+		<p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $globals}</span>', 'total={xen:count $globals}'}</p>
+	<xen:else />
+		<div class="noResults">{xen:phrase no_fields_have_been_added_yet}</div>
+	</xen:if>
+</xen:form>]]></template>
+    <template title="lpsf_field_templates_list"><![CDATA[<xen:title>{xen:phrase template_fields}</xen:title>
+
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+
+<xen:topctrl>
+	<a href="{xen:adminlink 'fields/add', '', 'type=template'}" class="button" accesskey="f">+ {xen:phrase add_template_field}</a>
+</xen:topctrl>
+
+<xen:form action="{xen:adminlink fields/templates}" class="section">
+	<xen:if is="{$templates}">
+		<h2 class="subHeading">
+			<xen:include template="filter_list_controls" />
+			{xen:phrase template_fields}
+		</h2>
+	
+		<ol class="FilterList">
+			<xen:foreach loop="$templates" value="$field">
+				<xen:listitem
+					id="field_{$field.field_id}"
+					label="{$field.title}"
+					snippet="{$field.field_name}"
+					href="{xen:adminlink fields/edit, $field}"
+					delete="{xen:adminlink fields/delete, $field}">
+					<xen:popup title="{xen:phrase controls}" ctrlclass="toolsCtrl">
+						<xen:link href="{xen:adminlink 'fields/delete', $field}">{xen:phrase delete}</xen:link>
+						<xen:link href="{xen:adminlink 'fields/edit', $field}">{xen:phrase edit}</xen:link>
+					</xen:popup>
+				</xen:listitem>
+			</xen:foreach>
+		</ol>
+	            
+		<p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $templates}</span>', 'total={xen:count $templates}'}</p>
+	<xen:else />
+		<div class="noResults">{xen:phrase no_fields_have_been_added_yet}</div>
+	</xen:if>
+</xen:form>]]></template>
+    <template title="lpsf_form_add"><![CDATA[<xen:title>{xen:phrase create_new_form}</xen:title>
+
+<xen:form action="{xen:adminlink 'forms/save', $form}"
+	class="AutoValidator"
+	data-fieldValidatorUrl="{xen:adminlink 'forms/validate-field', $form}"
+	data-redirect="yes">
+	<xen:hook name="admin_form_add">
+
+	<!-- slot: before_title -->
+
+	<xen:textboxunit name="title" value="{$form.title}" label="{xen:phrase title}:" data-liveTitleTemplate="{xen:if {$form.node_id},
+		'{xen:phrase edit_form}: <em>%s</em>',
+		'{xen:phrase create_new_form}: <em>%s</em>'}">
+	</xen:textboxunit>
+
+	<!-- slot: after_title -->
+
+	<xen:textboxunit name="description" value="{$form.description}" label="{xen:phrase description}:" hint="{xen:phrase you_may_use_html}" explain="{xen:phrase node_description_explain}" rows="2" inputclass="Elastic" />
+    
+	<!-- slot: after_description -->
+
+	<fieldset>
+		<!-- slot: before_active -->
+
+		<xen:checkboxunit label="{xen:phrase lpsf_form_is_active}:" name="active">
+			<xen:option label="" value="1" selected="0"/>
+		</xen:checkboxunit>
+				
+		<!-- slot: after_active -->
+
+		<xen:checkboxunit label="{xen:phrase hide_from_list}:" hint="{xen:phrase hide_from_list_hint}" name="hide_from_list">
+			<xen:option label="" value="1" selected="{$form.hide_from_list}"/>
+		</xen:checkboxunit>
+
+		<!-- slot: after_hide_from_list -->
+
+		<xen:spinboxunit name="max_responses" label="{xen:phrase max_responses_allowed}:" explain="{xen:phrase max_responses_allowed_explain}" min="0">
+		</xen:spinboxunit>
+    
+		<!-- slot: after_max_responses -->
+
+		<xen:spinboxunit name="max_responses_per_user" label="{xen:phrase max_responses_per_user_allowed}:" explain="{xen:phrase max_responses_per_user_allowed_explain}" min="0">
+		</xen:spinboxunit>
+
+		<!-- slot: after_max_responses_per_user -->
+
+		<xen:textboxunit label="{xen:phrase complete_message}:" explain="{xen:phrase complete_message_explain}" name="complete_message" value="Thank you for submitting this form.  We will respond to you shortly." />          
+
+		<!-- slot: after_complete_message -->
+
+		<xen:radiounit label="{xen:phrase redirect}" name="redirect_method">
+			<xen:explain>{xen:phrase redirect_url_explain}</xen:explain>
+	
+			<xen:option label="{xen:phrase lpsf_redirect_form}" value="self" selected="{$form.redirect_method} == 'self'" selected="1"/>	
+	
+			<xen:option label="{xen:phrase redirect_url}" value="url">
+				<xen:textbox name="redirect_url" value="{$form.redirect_url}"/>		
+			</xen:option>
+		</xen:radiounit>
+
+		<!-- slot: after_redirect_method -->
+        
+		<script>
+		$(function()
+		{
+			$('#DatePresets').change(function(e)
+			{
+				var $ctrl = $(this),
+					value = $ctrl.val(),
+					$form = $ctrl.closest('form');
+				
+				if (value == -1)
+				{
+					return;
+				}
+			
+				$form.find($ctrl.data('start') || 'input[name=start]').val(value);
+				$form.find($ctrl.data('end') || 'input[name=end]').val('');
+				$form.submit();
+			});
+		});
+		</script>
+
+		<fieldset>
+		<xen:controlunit label="">
+		<ul>
+			<li><label>
+				<input type="checkbox" name="start_date[enabled]" value="start" class="Disabler" id="pcrit_start" />
+				{xen:phrase lpsf_start_date}:</label>
+				<div class="criteriaQualifier" id="pcrit_start_Disabler">
+					<input type="date" name="start_date[ymd]" class="textCtrl autoSize" />
+					<label>{xen:phrase lpsf_time}:
+					<xen:select name="start_date[hh]" inputclass="autoSize">
+						<xen:options source="$dateCriteria.hours" />
+					</xen:select></label>:<xen:select name="start_date[mm]" inputclass="autoSize">
+						<xen:options source="$dateCriteria.minutes" />
+					</xen:select>
+					<ul>
+						<li><label><input type="radio" name="start_date[user_tz]" value="1" />
+							{xen:phrase lpsf_in_visitor_timezone}</label></li>
+						<li><label><input type="radio" name="start_date[user_tz]" value="0" class="Disabler" id="pcrit_start_tz" />
+							{xen:phrase lpsf_in_selected_timezone}:</label>
+							<ul id="pcrit_start_tz_Disabler">
+								<li>
+									<xen:select name="start_date[timezone]" inputclass="autoSize">
+										<xen:options source="$dateCriteria.timezones" />
+									</xen:select>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</li>
+		</ul>
+		</xen:controlunit>
+		</fieldset>  
+		
+		<fieldset>
+		<xen:controlunit label="">
+		<ul>
+			<li><label>
+				<input type="checkbox" name="end_date[enabled]" value="end" class="Disabler" id="pcrit_end" />
+				{xen:phrase lpsf_end_date}:</label>
+				<div class="criteriaQualifier" id="pcrit_end_Disabler">
+					<input type="date" name="end_date[ymd]" class="textCtrl autoSize" />
+					<label>{xen:phrase lpsf_time}:
+					<xen:select name="end_date[hh]" inputclass="autoSize">
+						<xen:options source="$dateCriteria.hours" />
+					</xen:select></label>:<xen:select name="end_date[mm]" inputclass="autoSize">
+						<xen:options source="$dateCriteria.minutes" />
+					</xen:select>
+					<ul>
+						<li><label><input type="radio" name="end_date[user_tz]" value="1" />
+							{xen:phrase lpsf_in_visitor_timezone}</label></li>
+						<li><label><input type="radio" name="end_date[user_tz]" value="0" class="Disabler" id="pcrit_end_tz" />
+							{xen:phrase lpsf_in_selected_timezone}:</label>
+							<ul id="pcrit_end_tz_Disabler">
+								<li>
+									<xen:select name="end_date[timezone]" inputclass="autoSize">
+										<xen:options source="$dateCriteria.timezones" />
+									</xen:select>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</li>
+		</ul>
+		</xen:controlunit>
+		</fieldset>  
+
+		<!-- slot: after_start_and_end_dates -->  
+	</fieldset>
+
+	<xen:submitunit save="{xen:phrase lpsf_save_form}">
+		<xen:if is="{$form.node_id}"><a href="{xen:adminlink forms/delete-confirm, $form}" class="button">{xen:phrase delete_form}...</a></xen:if>
+	</xen:submitunit>
+	</xen:hook>
+</xen:form>]]></template>
+    <template title="lpsf_form_add_global_field"><![CDATA[<xen:title>{xen:phrase add_global_field}</xen:title>
+
+<xen:h1>{xen:phrase add_global_field}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'forms/edit', $form}">{$form.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'forms/add-global-field', $form}" class="formOverlay">
+	<xen:selectunit label="{xen:phrase global_field}" name="global">
+		<xen:options source="$preparedGlobals"/>
+	</xen:selectunit>
+
+	<xen:submitunit save="{xen:phrase add_global_field}" />
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+</xen:form>]]></template>
+    <template title="lpsf_form_add_template_field"><![CDATA[<xen:title>{xen:phrase add_template_field}</xen:title>
+
+<xen:h1>{xen:phrase add_template_field}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'forms/edit', $form}">{$form.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'forms/add-template-field', $form}" class="formOverlay">
+	<xen:selectunit label="{xen:phrase field_template}" name="template">
+		<xen:options source="$preparedTemplates"/>
+	</xen:selectunit>
+
+	<xen:submitunit save="{xen:phrase add_template_field}" />
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+</xen:form>]]></template>
+    <template title="lpsf_form_delete"><![CDATA[<xen:title>{xen:phrase confirm_deletion_of_form}: {$form.title}</xen:title>
+<xen:h1>{xen:phrase confirm_deletion_of_form}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'forms/edit', $form}">{$form.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'forms/delete'}" class="deleteConfirmForm formOverlay">
+	<p>{xen:phrase please_confirm_want_to_delete_form}:</p>
+	<strong><a href="{xen:adminlink 'forms/edit', $form}">{$form.title}</a></strong>
+
+	<input type="hidden" name="form_id" value="{$form.form_id}" />
+	<input type="hidden" name="_xfConfirm" value="1" />
+
+	<xen:submitunit save="{xen:phrase delete_form}" />
+</xen:form>]]></template>
+    <template title="lpsf_form_destination_add_type"><![CDATA[<xen:title>{xen:phrase add_form_destination}</xen:title>
+
+<xen:form action="{xen:adminlink 'form-destinations/add'}">
+
+	<xen:radiounit name="destination_id" label="{xen:phrase destination_type}:" hint="{xen:phrase what_kind_of_destination_do_you_want_to_add}">
+		<xen:options source="$destinationOptions" />
+	</xen:radiounit>
+
+	<input type="hidden" name="form_id" value="{$formId}" />
+
+	<xen:submitunit save="{xen:phrase proceed}..." />
+
+</xen:form>]]></template>
+    <template title="lpsf_form_destination_delete"><![CDATA[<xen:title>{xen:phrase confirm_deletion_of_destination}: {$formDestination.name}</xen:title>
+<xen:h1>{xen:phrase confirm_deletion_of_destination}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'forms/edit', $form}">{$form.title}</xen:breadcrumb>
+	<xen:breadcrumb href="{xen:adminlink 'form-destinations/edit', $formDestination}">{$formDestination.name}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'form-destinations/delete', $formDestination}" class="deleteConfirmForm formOverlay">
+	<p>{xen:phrase please_confirm_want_to_delete_destination}:</p>
+	<strong><a href="{xen:adminlink 'form-destinations/edit', $formDestination}">{$formDestination.name}</a></strong>
+
+	<input type="hidden" name="form_id" value="{$form.form_id}" />
+	<input type="hidden" name="_xfConfirm" value="1" />
+
+	<xen:submitunit save="{xen:phrase delete_destination}" />
+</xen:form>]]></template>
+    <template title="lpsf_form_destination_edit"><![CDATA[<xen:title>{xen:if {$formDestination.form_destination_id}, '{xen:phrase edit_form_destination}: {$formDestination.name}', '{xen:phrase create_new_form_destination}'}</xen:title>
+
+<xen:require css="destination_options.css" />
+<xen:require js="js/liquidpro/simpleforms/jquery.ui.core.js" />
+<xen:require js="js/liquidpro/simpleforms/jquery.ui.widget.js" />
+<xen:require js="js/liquidpro/simpleforms/jquery.ui.mouse.js" />
+<xen:require js="js/liquidpro/simpleforms/jquery.ui.draggable.js" />
+<xen:require js="js/liquidpro/simpleforms/simpleforms.js" />
+
+<xen:if is="{$formDestination.form_destination_id}">
+	<xen:navigation>
+		<xen:breadcrumb href="{xen:adminlink forms/edit, $form}#{xen:helper listitemid, $form.form_id}">{$form.title}</xen:breadcrumb>
+		<xen:breadcrumb href="{xen:adminlink form-destinations/edit, $formDestination}#{xen:helper listitemid, $formDestination.form_destination_id}">{$formDestination.name}</xen:breadcrumb>
+	</xen:navigation>
+<xen:else />
+	<xen:navigation>
+		<xen:breadcrumb href="{xen:adminlink forms/edit, $form}#{xen:helper listitemid, $form.form_id}">{$form.title}</xen:breadcrumb>
+	</xen:navigation>
+</xen:if>
+
+<xen:form id="formDestinationEdit" action="{xen:adminlink 'form-destinations/save', $formDestination}"
+	class="AutoValidator"
+	data-fieldValidatorUrl="{xen:adminlink 'form-destinations/validate-field', $formDestination}"
+	data-redirect="yes">   
+
+	<div id="fieldHelper">
+		<span class="title">Field Helper</span>
+		<span class="close"><a href="javascript:void(0);">Close</a></span>
+		<ul class="fields">
+			<xen:if is="{$fields}">
+				<xen:foreach loop="$fields" key="$_fieldId" value="$_field">
+					<xen:set var="$title">$fields.{xen:raw $_field.field_name}.title</xen:set>
+					<xen:set var="$value">$fields.{xen:raw $_field.field_name}.value</xen:set>
+					<li>{xen:raw $_field.title}: <a href="javascript:void(0);" title="{{xen:raw $title}}">Title</a> - <a href="javascript:void(0);" title="{{xen:raw $value}}">Value</a></li>
+				</xen:foreach>
+			<xen:else />
+				<div class="noResults">{xen:phrase no_fields_have_been_added_yet}</div>
+			</xen:if>
+		</ul>
+	</div>
+	
+	<ul class="tabs Tabs" data-panes="#formDestinationPanes > li">
+		<xen:hook name="admin_form_destination_edit_tabs">
+		<li id="tabGeneral" class="active"><a href="#general">{xen:phrase general}</a></li>
+		<!-- slot: after_general_information -->
+		<li id="tabOptions"><a href="#options">{xen:phrase options}</a></li>
+		<!-- slot: after_options -->
+		</xen:hook>
+	</ul>
+
+	<ul id="formDestinationPanes">
+		<li>    
+			<!-- slot: before_destination_type -->
+
+			<xen:if is="{$destination}">
+				<xen:controlunit label="{xen:phrase destination_type}:">
+					<xen:html>{xen:raw $destination.name}</xen:html>
+				</xen:controlunit>
+			<xen:else />
+				<xen:textboxunit label="{xen:phrase field_id}:" name="new_field_name">
+					<xen:explain>{xen:phrase this_is_unique_identifier_for_field_cannot_be_changed}</xen:explain>
+				</xen:textboxunit>
+			</xen:if>
+
+			<!-- slot: after_destination_type -->
+
+			<fieldset>
+
+				<!-- slot: before_name -->
+
+				<xen:hook name="form_destination_edit_general_information">
+                		<xen:textboxunit name="name" value="{$formDestination.name}" label="{xen:phrase lpsf_destination_name}:" data-liveTitleTemplate="{xen:if {$formDestination.form_destination_id},
+                			'{xen:phrase edit_form_destination}: <em>%s</em>',
+                			'{xen:phrase create_new_form_destination}: <em>%s</em>'}">
+                		</xen:textboxunit>
+
+				<!-- slot: after_name --> 
+
+				<xen:checkboxunit label="">
+					<xen:option name="active" selected="{$formDestination.active}">{xen:phrase form_destination_is_active}</xen:option>
+				</xen:checkboxunit>
+
+				<!-- slot: after_active -->
+			</fieldset>
+			</xen:hook>
+		</li>
+
+		<!-- slot: after_general_information -->
+
+		<li>
+
+			<xen:hook name="form_destination_edit_options">
+			<xen:foreach loop="$formDestination.options" value="$option">
+				<xen:if is="{$option.field_type} == 'textbox'">
+					<xen:textboxunit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+						name="destination_options[{$option.option_id}]" id="ctrl_destination_options__{$option.option_id}"
+						value="{$option.option_value}" maxlength="{xen:if $option.max_length, $option.max_length}" inputclass="{xen:if $option.format_params.inputClass, $option.format_params.inputClass }" data-acDisplay="{xen:if $option.format_params.data-acDisplay, $option.format_params.data-acDisplay}" data-acUrl="{xen:if $option.format_params.data-acUrl, {xen:adminlink $option.format_params.data-acUrl} }"
+					/>
+				<xen:elseif is="{$option.field_type} == 'textarea'" />
+					<xen:textboxunit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+						name="destination_options[{$option.option_id}]" id="ctrl_destination_options_{$option.option_id}"
+						value="{$option.option_value}" rows="2" inputclass="{xen:if $option.format_params.inputClass, $option.format_params.inputClass }"
+					/>
+				<xen:elseif is="{$option.field_type} == 'radio'" />
+					<xen:radiounit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+						name="destination_options[{$option.option_id}]" id="ctrl_destination_options_{$option.option_id}" value="{$option.option_value}"
+					>
+						<xen:options source="$option.destinationOptionChoices" />
+					</xen:radiounit>
+				<xen:elseif is="{$option.field_type} == 'select'" />
+					<xen:selectunit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+						name="destination_options[{$option.option_id}]" id="ctrl_destination_options_{$option.option_id}" value="{$option.option_value}"
+					>
+						<xen:option value="">&nbsp;</xen:option>
+						<xen:options source="$option.field_choices" />
+					</xen:selectunit>
+				<xen:elseif is="{$option.field_type} == 'checkbox'" />
+					<xen:checkboxunit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+						name="destination_options[{$option.option_id}]" id="ctrl_destination_options_{$option.option_id}" value="{$option.option_value}"
+					>
+						<xen:foreach loop="$option.destinationOptionChoices" key="$_choiceId" value="$_choice">
+							<xen:option value="{$_choiceId}" selected="isset({$option.option_value.{$_choiceId}})">{$_choice}</xen:option>
+						</xen:foreach>
+					</xen:checkboxunit>
+				<xen:elseif is="{$option.field_type} == 'multiselect'" />
+					<xen:selectunit label="{xen:if "{$option.title} != ''", '{$option.title}:', ''}" explain="{xen:raw $option.description}"
+						name="destination_options[{$option.option_id}]" id="ctrl_destination_options_{$option.option_id}" value="{xen:raw $option.option_value}"
+						size="7" multiple="multiple"
+					>
+						<xen:option value="">&nbsp;</xen:option>
+						<xen:options source="$option.destinationOptionChoices" />
+					</xen:selectunit>
+				<xen:elseif is="{$option.field_type} == 'array'" />
+					<dl class="ctrlUnit">
+						<dt>{xen:if "{$option.title} != ''", '{$option.title}:', ''}</dt>
+						<dd>
+							<ul class="PollResponseContainer">
+								<xen:foreach loop="$option.option_value" value="$choice">
+									<li><input type="text" name="destination_options[{$option.option_id}][]" class="textCtrl" placeholder="{xen:phrase poll_choice}..." maxlength="100" value="{xen:raw $choice}" /></li>
+								</xen:foreach>
+								<li><input type="text" name="destination_options[{$option.option_id}][]" class="textCtrl" placeholder="{xen:phrase poll_choice}..." maxlength="100" /></li>
+								<li><input type="text" name="destination_options[{$option.option_id}][]" class="textCtrl" placeholder="{xen:phrase poll_choice}..." maxlength="100" /></li>
+							</ul>
+							<input type="button" value="{xen:phrase add_additional_response}" class="button smallButton FieldAdder JsOnly" data-source="ul.PollResponseContainer li" data-maxfields="{$xenOptions.pollMaximumResponses}" />
+						</dd>
+					</dl>
+				<xen:elseif is="{$option.field_type} == 'callback'" />
+					{xen:raw $option.renderedOption}
+				</xen:if>
+
+				<input type="hidden" name="destination_options_shown[]" value="{$option.option_id}" />
+			</xen:foreach> 
+			</xen:hook>   
+		</li>       
+
+		<!-- slot: after_options --> 
+	</ul>
+
+	<input type="hidden" name="form_id" id="form_id" value="{$form.form_id}" />
+	<input type="hidden" name="destination_id" id="destination_id" value="{$destination.destination_id}" />
+
+	<xen:submitunit save="{xen:phrase save_form_destination}">
+		<xen:if is="{$formDestination.form_destination_id}">
+			<input type="button" value="{xen:phrase delete_form_destination}..." accesskey="d" class="button OverlayTrigger"
+				data-href="{xen:adminlink 'form-destinations/delete', $formDestination}" />
+		</xen:if>
+	</xen:submitunit>
+</xen:form>]]></template>
+    <template title="lpsf_form_edit"><![CDATA[<xen:title>{xen:if {$form.form_id}, '{xen:phrase edit_form}: {$form.title}', '{xen:phrase create_new_form}'}</xen:title>
+
+<xen:require css="public:editor_ui.css" />
+<xen:require css="lpsf_form_edit.css" />
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+<xen:require js="js/sortable/jquery.sortable.min.js" />
+
+<xen:if is="{$form.form_id}">
+	<xen:navigation>
+		<xen:breadcrumb href="{xen:adminlink forms}#{xen:helper listitemid, $form.form_id}">{$form.title}</xen:breadcrumb>
+	</xen:navigation>
+
+	<xen:topctrl>
+		<a href="{xen:adminlink 'fields/add', '', 'form_id={$form.form_id}'}" class="button {xen:if "{xen:count $fieldTypes} > 1", "OverlayTrigger"}" accesskey="f">+ {xen:phrase add_field}</a>	
+		<a href="{xen:adminlink 'form-destinations/add', '', 'form_id={$form.form_id}'}" class="button OverlayTrigger" accesskey="d">+ {xen:phrase add_form_destination}</a>
+		<a href="{xen:link forms/respond, $form}" class="button" target="_blank" accesskey="v">{xen:phrase lpsf_view_form}</a>
+	</xen:topctrl>
+</xen:if>
+
+<xen:form id="formEdit" action="{xen:adminlink 'forms/save', $form}"
+	class="AutoValidator"
+	data-fieldValidatorUrl="{xen:adminlink 'forms/validate-field', $form}"
+	data-redirect="yes">   
+
+	<ul class="tabs Tabs" data-panes="#formPanes > li">
+		<xen:hook name="admin_form_edit_tabs">
+		<li id="tabGeneral" class="active"><a href="#general">{xen:phrase general}</a></li>
+		<!-- slot: after_general_information -->
+		<li id="tabFields"><a href="#fields">{xen:phrase fields}</a></li>
+		<!-- slot: after_fields -->
+		<li id="tabDestinations"><a href="#destinations">{xen:phrase destinations}</a></li>
+		<!-- slot: after_destination_options -->
+		<li id="tabDesign"><a href="#design">{xen:phrase design}</a></li>
+		</xen:hook>
+	</ul>
+
+	<ul id="formPanes">
+		<xen:hook name="admin_form_edit_panes">
+		<li>    
+			<!-- slot: before_title -->
+			<xen:hook name="form_edit_general_information">
+                	<xen:textboxunit name="title" value="{$form.title}" label="{xen:phrase title}:" data-liveTitleTemplate="{xen:if {$form.form_id},
+                		'{xen:phrase edit_form}: <em>%s</em>',
+                		'{xen:phrase create_new_form}: <em>%s</em>'}">
+                	</xen:textboxunit>
+
+			<!-- slot: after_title -->            
+
+	                <xen:textboxunit name="description" value="{$form.description}" label="{xen:phrase description}:" hint="{xen:phrase you_may_use_html}" explain="{xen:phrase node_description_explain}" rows="2" inputclass="Elastic" />
+
+			<!-- slot: after_description -->
+
+			<fieldset>
+				<!-- slot: before_active -->
+
+				<xen:checkboxunit label="{xen:phrase lpsf_form_is_active}:" name="active">
+					<xen:option label="" value="1" selected="{$form.active}"/>
+				</xen:checkboxunit>
+				
+				<!-- slot: after_active -->
+
+				<xen:checkboxunit label="{xen:phrase hide_from_list}:" hint="{xen:phrase hide_from_list_hint}" name="hide_from_list">
+					<xen:option label="" value="1" selected="{$form.hide_from_list}"/>
+				</xen:checkboxunit>
+
+				<!-- slot: after_hide_from_list -->
+				
+				<xen:checkboxunit label="{xen:phrase lpsf_require_attachment}:" hint="{xen:phrase lpsf_require_attachment_hint}" name="require_attachment">
+					<xen:option label="" value="1" selected="{$form.require_attachment}"/>
+				</xen:checkboxunit>			
+				<!-- slot: require_attachment -->	
+
+				<xen:spinboxunit name="max_responses" label="{xen:phrase max_responses_allowed}:" explain="{xen:phrase max_responses_allowed_explain}" value="{$form.max_responses}" min="0">
+				</xen:spinboxunit>
+
+				<!-- slot: after_max_responses -->
+
+				<xen:spinboxunit name="max_responses_per_user" label="{xen:phrase max_responses_per_user_allowed}:" explain="{xen:phrase max_responses_per_user_allowed_explain}" value="{$form.max_responses_per_user}" min="0">
+				</xen:spinboxunit>
+
+				<!-- slot: after_max_responses_per_user -->
+    
+				<xen:textboxunit label="{xen:phrase complete_message}:" explain="{xen:phrase complete_message_explain}" name="complete_message" value="{$form.complete_message}" />          
+
+				<!-- slot: after_complete_message -->
+
+				<xen:radiounit label="{xen:phrase redirect}" name="redirect_method">
+					<xen:explain>{xen:phrase redirect_url_explain}</xen:explain>
+
+					<xen:option label="{xen:phrase lpsf_redirect_form}" value="self" selected="{$form.redirect_method} == 'self'"/>
+	
+					<xen:option label="{xen:phrase redirect_url}" value="url" selected="{$form.redirect_method} == 'url'">
+						<xen:textbox name="redirect_url" value="{$form.redirect_url}"/>		
+					</xen:option>
+
+					<xen:option label="{xen:phrase destination}:" value="destination" selected="{$form.redirect_method} == 'destination'">
+						<xen:select name="redirect_destination" value="{$form.redirect_destination}">
+							<xen:options source="$redirectDestinations" />
+						</xen:select>
+					</xen:option>
+				</xen:radiounit>
+
+				<!-- slot: after_redirect_method -->
+
+				<script>
+				$(function()
+				{
+					$('#DatePresets').change(function(e)
+					{
+						var $ctrl = $(this),
+							value = $ctrl.val(),
+							$form = $ctrl.closest('form');
+							
+						if (value == -1)
+						{
+							return;
+						}
+						
+						$form.find($ctrl.data('start') || 'input[name=start]').val(value);
+						$form.find($ctrl.data('end') || 'input[name=end]').val('');
+						$form.submit();
+					});
+				});
+				</script>
+
+				<fieldset>
+				<xen:controlunit label="">
+				<ul>
+					<li><label>
+						<input type="checkbox" name="start_date[enabled]" value="start" class="Disabler" id="pcrit_start" {xen:checked $form.start_date.enabled} />
+						{xen:phrase lpsf_start_date}:</label>
+						<div class="criteriaQualifier" id="pcrit_start_Disabler">
+							<input type="date" name="start_date[ymd]" value="{$form.start_date.ymd}" class="textCtrl autoSize" />
+							<label>{xen:phrase lpsf_time}:
+							<xen:select name="start_date[hh]" value="{$form.start_date.hh}" inputclass="autoSize">
+								<xen:options source="$dateCriteria.hours" />
+							</xen:select></label>:<xen:select name="start_date[mm]" value="{$form.start_date.mm}" inputclass="autoSize">
+								<xen:options source="$dateCriteria.minutes" />
+							</xen:select>
+							<ul>
+								<li><label><input type="radio" name="start_date[user_tz]" value="1" {xen:checked '{$form.start_date.user_tz}'} />
+									{xen:phrase lpsf_in_visitor_timezone}</label></li>
+								<li><label><input type="radio" name="start_date[user_tz]" value="0" {xen:checked '!{$form.start_date.user_tz}'} class="Disabler" id="pcrit_start_tz" />
+									{xen:phrase lpsf_in_selected_timezone}:</label>
+									<ul id="pcrit_start_tz_Disabler">
+										<li>
+											<xen:select name="start_date[timezone]" inputclass="autoSize"
+												value="{xen:if {$form.start_date.timezone}, {$form.start_date.timezone}, {$visitor.timezone}}">
+												<xen:options source="$dateCriteria.timezones" />
+											</xen:select>
+										</li>
+									</ul>
+								</li>
+							</ul>
+						</div>
+					</li>
+				</ul>
+				</xen:controlunit>
+				</fieldset>  
+				
+				<fieldset>
+				<xen:controlunit label="">
+				<ul>
+					<li><label>
+						<input type="checkbox" name="end_date[enabled]" value="end" class="Disabler" id="pcrit_end" {xen:checked $form.end_date.enabled} />
+						{xen:phrase lpsf_end_date}:</label>
+						<div class="criteriaQualifier" id="pcrit_end_Disabler">
+							<input type="date" name="end_date[ymd]" value="{$form.end_date.ymd}" class="textCtrl autoSize" />
+							<label>{xen:phrase lpsf_time}:
+							<xen:select name="end_date[hh]" value="{$form.end_date.hh}" inputclass="autoSize">
+								<xen:options source="$dateCriteria.hours" />
+							</xen:select></label>:<xen:select name="end_date[mm]" value="{$form.end_date.mm}" inputclass="autoSize">
+								<xen:options source="$dateCriteria.minutes" />
+							</xen:select>
+							<ul>
+								<li><label><input type="radio" name="end_date[user_tz]" value="1" {xen:checked '{$form.end_date.user_tz}'} />
+									{xen:phrase lpsf_in_visitor_timezone}</label></li>
+								<li><label><input type="radio" name="end_date[user_tz]" value="0" {xen:checked '!{$form.end_date.user_tz}'} class="Disabler" id="pcrit_end_tz" />
+									{xen:phrase lpsf_in_selected_timezone}:</label>
+									<ul id="pcrit_end_tz_Disabler">
+										<li>
+											<xen:select name="end_date[timezone]" inputclass="autoSize"
+												value="{xen:if {$form.end_date.timezone}, {$form.end_date.timezone}, {$visitor.timezone}}">
+												<xen:options source="$dateCriteria.timezones" />
+											</xen:select>
+										</li>
+									</ul>
+								</li>
+							</ul>
+						</div>
+					</li>
+				</ul>
+				</xen:controlunit>
+				</fieldset>  
+
+				<!-- slot: after_start_and_end_dates -->
+
+			</fieldset>
+			</xen:hook>
+		</li>
+		<!-- slot: after_general_information -->
+		<li>
+			<xen:hook name="form_edit_fields">
+				<h2 class="subHeading">
+					<xen:include template="filter_list_controls" />
+					{xen:phrase fields}
+				</h2>
+
+				<ul class="FilterList" data-sort-url="{xen:adminlink fields/display-order}">
+					<xen:if is="{$fields}">
+					<li>
+					<ol class="Sortable" data-connect-with="ol.Sortable" data-parent-id="{$form.form_id}">
+					<xen:foreach loop="$fields" value="$field">
+						<xen:listitem
+							id="field_{$field.field_id}"
+							label="{$field.title}"
+							snippet="{$field.field_name}"
+							href="{xen:adminlink fields/edit, $field}"
+							labelclass="{xen:if '!{$field.active}', 'disabled'}"
+							delete="{xen:adminlink fields/delete, $field}"
+							data-item-id="{$field.field_id}"
+							class="FieldItem"
+							>
+							<xen:popup title="{xen:phrase controls}" ctrlclass="toolsCtrl">
+								<xen:link href="{xen:adminlink 'fields/disable', $field, '_xfToken={$visitor.csrf_token_page}'}" displayif="{$field.active}">{xen:phrase disable}</xen:link>
+								<xen:link href="{xen:adminlink 'fields/enable', $field, '_xfToken={$visitor.csrf_token_page}'}" displayif="!{$field.active}">{xen:phrase enable}</xen:link>
+								<xen:link href="{xen:adminlink 'fields/delete', $field}">{xen:phrase delete}</xen:link>
+								<xen:link href="{xen:adminlink 'fields/edit', $field}">{xen:phrase edit}</xen:link>
+								<xen:link href="{xen:adminlink 'fields/copy', $field}">{xen:phrase lpsf_copy}</xen:link>
+							</xen:popup>
+						</xen:listitem>
+					</xen:foreach>
+					
+					</li>
+					</xen:if>
+					<li class="noResults Unsortable" style="{xen:if $fields, 'display: none'}"><div class="noResults"><i>{xen:phrase no_fields_have_been_added_yet}</i></div></li>
+				</ul>
+            
+				<p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $fields}</span>', 'total={xen:count $fields}'}</p>
+			</xen:hook>
+		</li>
+		<!-- slot: after_fields -->
+		<li>
+			<xen:hook name="form_edit_destination_options">
+			<xen:if is="{$formDestinations}">
+				<h2 class="subHeading">
+					
+					{xen:phrase destinations}
+				</h2>
+
+				<ol class="FilterList">
+					<xen:foreach loop="$formDestinations" value="$formDestination">
+						<xen:listitem
+							id="form_destination_{$formDestination.form_destination_id}"
+							label="{$formDestination.name}"
+							snippet="{$formDestination.destination_name}"
+							href="{xen:adminlink form-destinations/edit, $formDestination}"
+							labelclass="{xen:if '!{$formDestination.active}', 'disabled'}"
+							delete="{xen:adminlink form-destinations/delete, $formDestination}">
+							<xen:popup title="{xen:phrase controls}" ctrlclass="toolsCtrl">
+								<xen:link href="{xen:adminlink 'form-destinations/disable', $formDestination, '_xfToken={$visitor.csrf_token_page}'}" displayif="{$formDestination.active}">{xen:phrase disable}</xen:link>
+								<xen:link href="{xen:adminlink 'form-destinations/enable', $formDestination, '_xfToken={$visitor.csrf_token_page}'}" displayif="!{$formDestination.active}">{xen:phrase enable}</xen:link>
+								<xen:link href="{xen:adminlink 'form-destinations/delete', $formDestination}">{xen:phrase delete}</xen:link>
+								<xen:link href="{xen:adminlink 'form-destinations/edit', $formDestination}">{xen:phrase edit}</xen:link>
+							</xen:popup>
+						</xen:listitem>
+					</xen:foreach>
+				</ol>
+            
+				<p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $formDestinations}</span>', 'total={xen:count $formDestinations}'}</p>
+
+			<xen:else />
+
+				<div class="noResults">{xen:phrase no_destinations_have_been_added_yet}</div>
+
+			</xen:if>
+			</xen:hook>
+		</li>
+		<!-- slot: after_destination_options -->
+		<li>
+			<xen:hook name="form_edit_design">
+			<!-- slot: before_css -->
+
+			<xen:textboxunit name="css" value="{$form.css}" label="{xen:phrase custom_css}:" explain="{xen:phrase custom_css_explain}" rows="10" inputclass="Elastic" />
+
+			<!-- slot: after_css -->
+
+			<xen:textboxunit name="header_html" value="{$form.header_html}" label="{xen:phrase lpsf_header_html}:" rows="10" inputclass="Elastic" />
+
+			<!-- slot: after header_html -->
+
+			<xen:textboxunit name="footer_html" value="{$form.footer_html}" label="{xen:phrase lpsf_footer_html}:" rows="10" inputclass="Elastic" />
+
+			<!-- slot: after footer_html -->
+			
+			</xen:hook>
+		</li>
+		<!-- slot: after_design -->
+		</xen:hook>
+	</ul>
+
+	<xen:submitunit>
+		<input type="submit" name="reload" value="{xen:phrase lpsf_save_form}" accesskey="s" class="button primary" />
+		<input type="submit" name="saveexit" value="{xen:phrase lpsf_save_and_exit_form}" accesskey="e" class="button" />
+	
+		<xen:if is="{$form.form_id}"><a href="{xen:adminlink forms/delete-confirm, $form}" class="button">{xen:phrase delete_form}...</a></xen:if>
+	</xen:submitunit>
+
+</xen:form>]]></template>
+    <template title="lpsf_form_edit.css"><![CDATA[.FilterList .moveDown, .FilterList .moveUp { 
+padding: 0px; 
+width: 30px;
+
+height: 30px;
+}
+.FilterList .moveDown span, .FilterList .moveUp span { 
+display: block;
+
+background: transparent url('styles/default/liquidpro/simpleforms/acp-icons/movedown.png') no-repeat center center; 
+cursor: pointer; 
+padding: 5px; 
+width: 20px;
+
+height: 20px; 
+overflow: hidden; 
+white-space: nowrap; 
+text-indent: -1000px;
+}
+.FilterList .moveUp span { 
+background-image: url('styles/default/liquidpro/simpleforms/acp-icons/moveup.png');
+}]]></template>
+    <template title="lpsf_form_import"><![CDATA[<xen:title>{xen:phrase import_form}</xen:title>
+
+<xen:form action="{xen:adminlink 'forms/import'}" upload="true">
+	<xen:uploadunit label="{xen:phrase import_from_uploaded_file}:" name="upload_file" />
+	<xen:textboxunit label="{xen:phrase import_from_file_on_server}:" name="server_file" />
+	
+	<xen:submitunit save="{xen:phrase import_form}" />
+	<input type="hidden" name="_xfConfirm" value="1" />
+</xen:form>]]></template>
+    <template title="lpsf_form_list"><![CDATA[<xen:title>{xen:phrase forms}</xen:title>
+
+<xen:topctrl>
+<a href="{xen:adminlink 'forms/import'}" class="button" accesskey="i">+ {xen:phrase import_form}</a>
+	<a href="{xen:adminlink 'forms/add'}" class="button" accesskey="a">+ {xen:phrase create_new_form}</a>
+</xen:topctrl>
+
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+<xen:require js="js/sortable/jquery.sortable.min.js" />
+
+<xen:form action="{xen:adminlink forms/toggle}" class="section AutoValidator">
+	<h2 class="subHeading">
+		<xen:include template="filter_list_controls" />
+		{xen:phrase forms}
+	</h2>
+
+	<ul class="FilterList Scrollable" data-sort-url="{xen:adminlink forms/display-order}">
+		<xen:if is="{$forms}">			
+			<li>
+			<ol class="Sortable" data-connect-with="ol.Sortable">
+			<xen:foreach loop="$forms" value="$form">
+				<xen:listitem id="{$form.form_id}"
+					label="{$form.title}"
+					href="{xen:adminlink 'forms/edit', $form}"
+					snippet="{xen:number $form.num_responses} {xen:phrase responses}"
+					delete="{xen:adminlink 'forms/delete', $form}"
+					data-item-id="{$form.form_id}"
+					toggle="{$form.active}"
+					toggletitle="{xen:phrase enable_disable_x, 'title={$form.title}'}">
+					<xen:html>
+						<xen:popup title="{xen:phrase responses}">
+							<xen:link href="{xen:adminlink 'forms/responses', $form}">{xen:phrase manage}</xen:link>
+							<xen:link href="{xen:adminlink 'responses/clear', '', 'form_id={$form.form_id}'}">{xen:phrase lpsf_clear_all_responses}</xen:link>
+							<xen:link href="{xen:adminlink 'forms/export-responses', $form}">{xen:phrase export_to_csv}</xen:link>
+						</xen:popup>
+						<xen:popup title="{xen:phrase controls}">
+							<xen:link href="{xen:adminlink 'forms/disable', $form, '_xfToken={$visitor.csrf_token_page}'}" displayif="{$form.active}">{xen:phrase disable}</xen:link>
+							<xen:link href="{xen:adminlink 'forms/enable', $form, '_xfToken={$visitor.csrf_token_page}'}" displayif="!{$form.active}">{xen:phrase enable}</xen:link>
+							<xen:link href="{xen:adminlink 'forms/delete', $form}">{xen:phrase delete}</xen:link>
+							<xen:link href="{xen:adminlink 'forms/edit', $form}">{xen:phrase edit}</xen:link>
+							<xen:link href="{xen:adminlink 'forms/export', $form}">{xen:phrase export}</xen:link>
+							<xen:link href="{xen:link 'forms/respond', $form}" target="_blank">{xen:phrase view_form}</xen:link>
+						</xen:popup>
+						<a href="{xen:adminlink 'form-permissions', $form}" class="secondaryContent {xen:if {$formsWithPerms.{$form.form_id}}, 'hasPermissions'}">{xen:phrase permissions}</a>
+					</xen:html>
+				</xen:listitem>
+			</xen:foreach>
+			</ol>
+			</li>
+		</xen:if>
+		
+		<li class="noResults Unsortable" style="{xen:if $forms, 'display: none'}"><div class="noResults"><i>{xen:phrase there_no_forms_defined}</i></div></li>
+	</ul>
+
+	<p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $forms}</span>', 'total={xen:count $forms}'}</p>
+</xen:form>]]></template>
+    <template title="lpsf_form_responses"><![CDATA[<xen:title>{xen:phrase responses}: {$form.title}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink forms/edit, $form}#{xen:helper listitemid, $form.form_id}">{$form.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:topctrl>
+	<a href="{xen:adminlink 'responses/clear', '', 'form_id={$form.form_id}'}" class="button OverlayTrigger">{xen:phrase lpsf_clear_all_responses}</a>	
+	<a href="{xen:adminlink 'forms/export-responses', $form}" class="button">{xen:phrase export_to_csv}</a>
+</xen:topctrl>
+
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+
+<xen:form action="{xen:adminlink forms/responses}" class="section">
+
+	<xen:if is="{$responses}">
+
+		<h2 class="subHeading">
+			<xen:include template="filter_list_controls" />
+			{xen:phrase responses}
+		</h2>
+
+		<ol class="FilterList Scrollable">
+			<xen:foreach loop="$responses" value="$response">
+				<xen:listitem
+					id="{$response.response_id}"
+					label="{$response.username}"
+					snippet="{xen:datetime $response.response_date}"
+					href="{xen:adminlink 'responses/edit', $response}"
+					delete="{xen:adminlink 'responses/delete', $response}" />
+			</xen:foreach>
+		</ol>
+
+		<p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $responses}</span>', 'total={xen:count $responses}'}</p>
+
+	<xen:else />
+
+		<div class="noResults">{xen:phrase lpsf_there_are_no_responses}</div>
+
+	</xen:if>
+
+</xen:form>]]></template>
+    <template title="lpsf_forum_edit"><![CDATA[<xen:checkboxunit label="">
+	<xen:option name="lpsf_replace_button" label="{xen:phrase lpsf_replace_new_thread_button}" selected="{$forum.lpsf_replace_button}">
+		<xen:select name="lpsf_form_id" value="{$forum.lpsf_form_id}">
+			<xen:options source="$formOptions" />
+		</xen:select>
+		<xen:hint>{xen:phrase lpsf_set_form_here_to_replace_create_new_thread_button}</xen:hint>
+		
+		<xen:textbox name="lpsf_button_text" value="{$forum.lpsf_button_text}" label="{xen:phrase lpsf_button_label}:" />
+
+	</xen:option>
+</xen:checkboxunit>
+
+<input type="hidden" name="lpsf_forum_form_id" value="{$forum.lpsf_forum_form_id}"/>
+
+<!-- slot: after_lpsf_form_id -->]]></template>
+    <template title="lpsf_response_clear"><![CDATA[<xen:title>{xen:phrase lpsf_confirm_clearing_of_all_responses}: {$form.title}</xen:title>
+<xen:h1>{xen:phrase lpsf_confirm_clearing_of_all_responses}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'forms/edit', $form}">{$form.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'responses/clear', '', 'form_id={$form.form_id}'}" class="deleteConfirmForm formOverlay">
+	<p>{xen:phrase lpsf_please_confirm_want_to_clear_all_responses}</p>
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+
+	<xen:submitunit save="{xen:phrase lpsf_clear_all_responses}" />
+</xen:form>]]></template>
+    <template title="lpsf_response_delete"><![CDATA[<xen:title>{xen:phrase confirm_deletion_of_response}: {$form.title}</xen:title>
+<xen:h1>{xen:phrase confirm_deletion_of_response}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'forms/edit', $form}">{$form.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'responses/delete', $response}" class="deleteConfirmForm formOverlay">
+	<p>{xen:phrase please_confirm_want_to_delete_response}:</p>
+	<strong><a href="{xen:adminlink 'responses/edit', $response}">{$response.username} on {xen:datetime $response.response_date}</a></strong>
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+
+	<xen:submitunit save="{xen:phrase lpsf_delete_response}" />
+</xen:form>]]></template>
+    <template title="lpsf_response_edit"><![CDATA[<xen:title>{xen:phrase edit_response}: {$response.username} on {xen:datetime $response.response_date}</xen:title>
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink forms/edit, $form}">{$form.title}</xen:breadcrumb>
+	<xen:breadcrumb href="{xen:adminlink forms/responses, $form}">{xen:phrase manage_responses}</xen:breadcrumb>
+</xen:navigation>
+
+<form method="post" class="xenForm AutoValidator"
+	action="{xen:adminlink 'responses/save', $response}"
+	data-fieldValidatorUrl="{xen:link 'responses/validate-field'}" data-redirect="on">
+	
+	<xen:foreach loop="$fields" value="$field">
+		<xen:if is="{$field}">
+			<xen:include template="response_edit_field" />
+		</xen:if>
+	</xen:foreach>
+
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd>
+			<input type="submit" value="{xen:phrase submit}" class="button primary" />
+			<a href="{xen:adminlink 'responses/delete', $response}" class="button">{xen:phrase lpsf_delete_response}</a>
+		</dd>
+	</dl>
+</form>]]></template>
+    <template title="lpsf_response_edit.css"><![CDATA[.lpsf_rating ul{width:100%;overflow:hidden;}
+.lpsf_rating li{float:left;padding-right:5px;}]]></template>
+    <template title="lpsf_user_group_promotion_criteria"><![CDATA[<fieldset>
+<xen:controlunit label="{xen:phrase lpsf_liquidpro_simpleforms_criteria}:">
+<ul>
+	<li><label>
+		<input type="checkbox" name="user_criteria[lpsf_responded][rule]" value="lpsf_responded" class="Disabler" id="ucrit_lpsf_responded" {xen:checked $userCriteria.lpsf_responded} />
+		{xen:phrase lpsf_user_responded_to_any_of_selected_forms}:</label>
+		<div class="criteriaQualifier" id="ucrit_lpsf_responded_Disabler">
+			<xen:select name="user_criteria[lpsf_responded][data][form_ids]" size="4" multiple="true">
+				<xen:foreach loop="$lpsf_forms" value="$_form">
+					<xen:option value="{$_form.form_id}" selected="{$userCriteria.lpsf_responded.form_ids} AND in_array({$_form.form_id}, {$userCriteria.lpsf_responded.form_ids})">{$_form.title}</xen:option>
+				</xen:foreach>
+			</xen:select>
+		</div>
+	</li>
+	
+	<li><label>
+		<input type="checkbox" name="user_criteria[lpsf_responded_any][rule]" value="lpsf_responded_any" class="Disabler" id="ucrit_lpsf_responded_any" {xen:checked $userCriteria.lpsf_responded_any} />
+		{xen:phrase lpsf_user_responded_any_form}</label>
+	</li>
+</ul>
+</xen:controlunit>
+</fieldset>]]></template>
+    <template title="permission_form"><![CDATA[<xen:title>{xen:phrase form_permissions}: {$form.title}</xen:title>
+
+<xen:require css="permission.css" />
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink forms}#{xen:helper listitemid, $form.form_id}">{xen:phrase permissions}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:topctrl>
+	<form action="{xen:adminlink form-permissions/user/add, $form}" method="post">
+		<input type="search" name="username" class="textCtrl AutoComplete AcSingle" size="20" results="10" placeholder="{xen:phrase user_name}" />
+		<input type="submit" value="{xen:phrase set_permissions}" class="button" />
+		<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+	</form>
+</xen:topctrl>
+
+<xen:require js="js/xenforo/filter_list.js" />
+<xen:require css="filter_list.css" />
+
+<xen:form action="{xen:adminlink form-permissions/form-wide-revoke, $form}">
+	<xen:checkboxunit label="" class="fullWidth">
+		<xen:option name="revoke" selected="{$revoked}">
+			<xen:label>{xen:phrase private_form}</xen:label>
+			<xen:hint>{xen:phrase if_selected_users_only_view_form_if_granted_permissions}</xen:hint>
+		</xen:option>
+	</xen:checkboxunit>
+
+	<xen:submitunit class="fullWidth" save="{xen:phrase update}" />
+</xen:form>
+
+<form action="{xen:adminlink form-permissions, $form}#user-groups" name="user-groups" class="section">
+	<h2 class="subHeading">{xen:phrase user_groups}</h2>
+	
+	<ol class="FilterList Scrollable">
+		<xen:foreach loop="$userGroups" value="$userGroup">
+			<xen:listitem
+				id="user_group_{$userGroup.user_group_id}"
+				label="{$userGroup.title}"
+				href="{xen:adminlink 'form-permissions/user-group', $form, 'user_group_id={$userGroup.user_group_id}'}"
+				labelclass="{xen:if {$groupsWithPerms.{$userGroup.user_group_id}}, 'hasPermissions'}">
+				<xen:html>
+					<a href="{xen:adminlink user-groups/edit, $userGroup}" class="secondaryContent">{xen:phrase group_info}</a>
+				</xen:html>
+			</xen:listitem>
+		</xen:foreach>
+	</ol>
+</form>
+
+<xen:if is="{$users}">
+	<form action="{xen:adminlink form-permissions, $node}#users" name="users" class="section">
+		<h2 class="subHeading">{xen:phrase users}</h2>
+	
+		<ol class="FilterList Scrollable">
+			<xen:foreach loop="$users" value="$user">
+				<xen:listitem
+					id="user_{$user.user_id}"
+					label="{$user.username}"
+					href="{xen:adminlink 'form-permissions/user', $form, 'user_id={$user.user_id}'}"
+					class="hasPermissions">
+					<xen:beforelabel>
+						<img src="{xen:helper avatar, $user, s}" alt="" class="listAvatar" />
+					</xen:beforelabel>
+					<xen:html>
+						<a href="{xen:adminlink users/edit, $user}" class="secondaryContent">{xen:phrase user_info}</a>
+					</xen:html>
+				</xen:listitem>
+			</xen:foreach>
+		</ol>
+	</form>
+</xen:if>]]></template>
+    <template title="permission_form_user"><![CDATA[<xen:title>{xen:phrase form_permissions}: {$form.title} - {$user.username}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'form-permissions', $form}">{xen:phrase permissions}: {$form.title}</xen:breadcrumb>
+	<xen:breadcrumb href="{xen:adminlink 'form-permissions', $form}#{xen:helper listitemid, 'user_{$user.user_id}'}">{$user.username}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require js="js/xenforo/permission.js" />
+<xen:require css="permission.css" />
+
+<xen:form action="{xen:adminlink 'form-permissions/user/save', $form}" class="PermissionChoices">
+
+	<xen:include template="permission_tooltip">
+		<xen:set var="$contentPermission">1</xen:set>
+	</xen:include>
+	
+	<fieldset id="piGroups">
+		
+		<xen:include template="permission_check_all">
+			<xen:set var="$target"></xen:set>
+		</xen:include>
+	
+		<xen:foreach loop="$permissions" key="$permissionGroupId" value="$permissionGroup">
+			<xen:include template="permission_list_form_group" />
+		</xen:foreach>
+		
+	</fieldset>
+	
+	<input type="hidden" name="user_id" value="{$user.user_id}" />
+
+	<xen:submitunit save="{xen:phrase update_permissions}" />
+
+</xen:form>]]></template>
+    <template title="permission_form_user_group"><![CDATA[<xen:title>{xen:phrase form_permissions}: {$form.title} - {$userGroup.title}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink form-permissions, $form}">{xen:phrase permissions}: {$form.title}</xen:breadcrumb>
+	<xen:breadcrumb href="{xen:adminlink form-permissions, $form}#{xen:helper listitemid, 'user_group_{$userGroup.user_group_id}'}">{$userGroup.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require js="js/xenforo/permission.js" />
+<xen:require css="permission.css" />
+
+<xen:form action="{xen:adminlink 'form-permissions/user-group/save', $form}" class="PermissionChoices">
+	
+	<xen:include template="permission_tooltip">
+		<xen:set var="$contentPermission">1</xen:set>
+	</xen:include>
+
+	<fieldset id="piGroups">
+		
+		<xen:include template="permission_check_all">
+			<xen:set var="$target">#piGroups</xen:set>
+		</xen:include>
+
+		<xen:foreach loop="$permissions" key="$permissionGroupId" value="$permissionGroup">
+			<xen:include template="permission_list_form_group" />
+		</xen:foreach>
+	
+	</fieldset>
+	
+	<input type="hidden" name="user_group_id" value="{$userGroup.user_group_id}" />
+
+	<xen:submitunit save="{xen:phrase update_permissions}" />
+</xen:form>]]></template>
+    <template title="permission_list_form_group"><![CDATA[<!--{$permissionGroupId}-->
+<xen:foreach loop="$permissionGroup" value="$interfaceGroup">
+	<xen:include template="permission_list_group" />
+</xen:foreach>]]></template>
+    <template title="response_edit_field"><![CDATA[<xen:require css="lpsf_response_edit.css" />
+
+<dl class="ctrlUnit">
+	<dt>
+		<xen:if is="{$field.hide_title} == 0">
+		<label for="ctrl_field_{$field.field_id}">{$field.title}:</label>
+		<xen:if is="{$field.required}"><dfn>{xen:phrase required}</dfn></xen:if>
+		</xen:if>
+	</dt>
+	<dd>
+		<xen:if is="{$field.field_type} == 'textbox'">
+			<input type="text" name="fields[{$field.field_id}]" value="{$field.field_value}" 
+				id="ctrl_field_{$field.field_id}"
+				data-validatorname="field[{$field.field_id}]"
+				class="textCtrl" maxlength="{xen:if $field.max_length, $field.max_length}" 
+			/>
+		<xen:elseif is="{$field.field_type} == 'textarea'" />
+			<textarea name="fields[{$field.field_id}]" 
+				id="ctrl_field_{$field.field_id}"
+				data-validatorname="field[{$field.field_id}]" 
+				class="textCtrl Elastic">{$field.field_value}</textarea>
+		<xen:elseif is="{$field.field_type} == 'radio'" />
+			<ul class="checkboxColumns">
+			<xen:if is="!{$field.required}">
+				<li><label><input type="radio" name="fields[{$field.field_id}]" value="" {xen:checked '{$field.field_value} == ""'} /> <span class="muted">{xen:phrase no_selection}</span></label></li>
+			</xen:if>
+			<xen:foreach loop="$field.fieldChoices" key="$choice" value="$text">
+				<li><label><input type="radio" name="fields[{$field.field_id}]" value="{$choice}" {xen:checked '{$field.field_value} == {$choice}'} /> {xen:raw $text}</label></li>
+			</xen:foreach>
+			</ul>
+		<xen:elseif is="{$field.field_type} == 'select'" />
+			<select name="fields[{$field.field_id}]" id="ctrl_field_{$field.field_id}" class="textCtrl">
+			<xen:if is="!{$field.required} OR !{$field.hasValue}">
+				<option value="">&nbsp;</option>
+			</xen:if>
+			<xen:foreach loop="$field.fieldChoices" key="$choice" value="$text">
+				<option value="{$choice}" {xen:selected '{$field.field_value} == {$choice}'} />{xen:raw $text}</option>
+			</xen:foreach>
+			</select>
+		<xen:elseif is="{$field.field_type} == 'checkbox'" />
+			<ul class="checkboxColumns">
+			<xen:foreach loop="$field.fieldChoices" key="$choice" value="$text">
+				<li><label><input type="checkbox" name="fields[{$field.field_id}][{$choice}]" value="{$choice}" {xen:checked 'isset({$field.field_value.{$choice}})'} /> {xen:raw $text}</label></li>
+			</xen:foreach>
+			</ul>
+		<xen:elseif is="{$field.field_type} == 'multiselect'" />
+			<select name="fields[{$field.field_id}][]" id="ctrl_field_{$field.field_id}" class="textCtrl" size="7" multiple="multiple">
+			<xen:if is="!{$field.required} OR !{$field.hasValue}">
+				<option value="">&nbsp;</option>
+			</xen:if>
+			<xen:foreach loop="$field.fieldChoices" key="$choice" value="$text">
+				<option value="{$choice}" {xen:selected 'isset({$field.field_value.{$choice}}'} />{xen:raw $text}</option>
+			</xen:foreach>
+			</select>
+		<xen:elseif is="{$field.field_type} == 'wysiwyg'" />
+			{xen:raw $field.editor}
+		<xen:elseif is="{$field.field_type} == 'date'"/>
+			<input type="date" name="fields[{$field.field_id}]" value="{$field.field_value}" 
+				placeholder="{$field.placeholder}"
+				data-validatorname="field[{$field.field_id}]"
+				id="ctrl_field_{$field.field_id}" 
+				class="textCtrl" 
+			/>
+		<xen:elseif is="{$field.field_type} == 'rating'" />
+			<div class="lpsf_rating">
+				<ul>
+				<xen:foreach loop="{$field.fieldChoices}" value="$choice">
+					<li><label><input type="radio" name="fields[{$field.field_id}]" value="{$choice}" {xen:checked '{$field.field_value} == {$choice}'} /> {xen:raw $choice}</label></li>				
+				</xen:foreach>
+				</ul>
+			</div>
+		</xen:if>
+
+		<xen:if hascontent="true"><p class="explain"><xen:contentcheck>{xen:raw $field.description}</xen:contentcheck></p></xen:if>
+		<input type="hidden" name="fields_shown[]" value="{$field.field_id}" />
+	</dd>
+</dl>]]></template>
+    <template title="simpleforms_js"><![CDATA[<script>
+var LiquidPro = {};
+LiquidPro.AutoCompleteGeneric= function($element) { this.__construct($element); };
+LiquidPro.AutoCompleteGeneric.prototype =
+{
+	__construct: function($input)
+	{
+		this.$input = $input;
+
+		this.url = $input.data('acUrl');
+		this.extraFields = $input.data('acExtraFields');
+		this.$display = $input.data('acDisplay');
+
+		var options = {
+			multiple: $input.hasClass('AcSingle') ? false : ',', // mutiple value joiner
+			minLength: 2, // min word length before lookup
+			queryKey: 'q',
+			extraParams: {},
+			jsonContainer: 'results',
+			autoSubmit: XenForo.isPositive($input.data('autoSubmit'))
+		};
+		if ($input.data('acOptions'))
+		{
+			options = $.extend(options, $.parseJSON($input.data('acOptions')));
+		}
+
+		if (options.autoSubmit)
+		{
+			options.multiple = false;
+		}
+
+		this.multiple = options.multiple;
+		this.minLength = options.minLength;
+		this.queryKey = options.queryKey;
+		this.extraParams = options.extraParams;
+		this.jsonContainer = options.jsonContainer;
+		this.autoSubmit = options.autoSubmit;
+
+		this.selectedResult = 0;
+		this.loadVal = '';
+		this.$results = false;
+		this.resultsVisible = false;
+
+		$input.attr('autocomplete', 'off')
+			.keydown($.context(this, 'keystroke'))
+			.keypress($.context(this, 'operaKeyPress'))
+			.blur($.context(this, 'blur'));
+
+		$input.closest('form').submit($.context(this, 'hideResults'));
+	},
+
+	keystroke: function(e)
+	{
+		var code = e.keyCode || e.charCode, prevent = true;
+
+		switch(code)
+		{
+			case 40: this.selectResult(1); break; // down
+			case 38: this.selectResult(-1); break; // up
+			case 27: this.hideResults(); break; // esc
+			case 13: // enter
+				if (this.resultsVisible)
+				{
+					this.insertSelectedResult();
+				}
+				else
+				{
+					prevent = false;
+				}
+				break;
+
+			default:
+				prevent = false;
+				if (this.loadTimer)
+				{
+					clearTimeout(this.loadTimer);
+				}
+				this.loadTimer = setTimeout($.context(this, 'load'), 200);
+
+				if (this.$results)
+				{
+					this.$results.hide().empty();
+					this.resultsVisible = false;
+				}
+		}
+
+		if (prevent)
+		{
+			e.preventDefault();
+		}
+		this.preventKey = prevent;
+	},
+
+	operaKeyPress: function(e)
+	{
+		if ($.browser.opera && this.preventKey)
+		{
+			e.preventDefault();
+		}
+	},
+
+	blur: function(e)
+	{
+		clearTimeout(this.loadTimer);
+
+		// timeout ensures that clicks still register
+		setTimeout($.context(this, 'hideResults'), 250);
+
+		if (this.xhr)
+		{
+			this.xhr.abort();
+			this.xhr = false;
+		}
+	},
+
+	load: function()
+	{
+		var lastLoad = this.loadVal,
+			params = this.extraParams;
+
+		if (this.loadTimer)
+		{
+			clearTimeout(this.loadTimer);
+		}
+
+		this.loadVal = this.getPartialValue();
+
+		if (this.loadVal == '')
+		{
+			this.hideResults();
+			return;
+		}
+
+		if (this.loadVal == lastLoad)
+		{
+			return;
+		}
+
+		if (this.loadVal.length < this.minLength)
+		{
+			return;
+		}
+
+		params[this.queryKey] = this.loadVal;
+
+		if (this.extraFields != '')
+		{
+			$(this.extraFields).each(function()
+			{
+				params[this.name] = $(this).val();
+			});
+		}
+
+		if (this.xhr)
+		{
+			this.xhr.abort();
+		}
+
+		this.xhr = XenForo.ajax(
+			this.url,
+			params,
+			$.context(this, 'showResults'),
+			{ global: false, error: false }
+		);
+	},
+
+	hideResults: function()
+	{
+		this.resultsVisible = false;
+
+		if (this.$results)
+		{
+			this.$results.hide();
+		}
+	},
+
+	showResults: function(results)
+	{
+		var offset = this.$input.offset(),
+			maxZIndex = 0,
+			i,
+			filterRegex;
+
+		if (this.xhr)
+		{
+			this.xhr = false;
+		}
+
+		if (!results)
+		{
+			this.hideResults();
+			return;
+		}
+
+		if (this.jsonContainer)
+		{
+			if (!results[this.jsonContainer])
+			{
+				this.hideResults();
+				return;
+			}
+			else
+			{
+				results = results[this.jsonContainer];
+			}
+		}
+
+		this.resultsVisible = false;
+
+		if (!this.$results)
+		{
+			this.$results = $('<ul />')
+				.css({position: 'absolute', display: 'none'})
+				.addClass('autoCompleteList')
+				.appendTo(document.body);
+
+			this.$input.parents().each(function(i, el)
+			{
+				var $el = $(el),
+					zIndex = parseInt($el.css('z-index'), 10);
+
+				if (zIndex > maxZIndex)
+				{
+					maxZIndex = zIndex;
+				}
+			});
+
+			this.$results.css('z-index', maxZIndex + 1000);
+		}
+		else
+		{
+			this.$results.hide().empty();
+		}
+
+		filterRegex = new RegExp('(' + XenForo.regexQuote(this.$input.val()) + ')', 'i');
+
+		for (i in results)
+		{
+			$('<li />')
+				.css('cursor', 'pointer')
+				.data('autoComplete', i)
+				.click($.context(this, 'resultClick'))
+				.mouseenter($.context(this, 'resultMouseEnter'))
+				.html(results[i][this.$display].replace(filterRegex, '<strong>$1</strong>'))
+				.appendTo(this.$results);
+		}
+
+		if (!this.$results.children().length)
+		{
+			return;
+		}
+
+		this.selectResult(0, true);
+
+		var css = {
+			top: offset.top + this.$input.outerHeight(),
+			left: offset.left
+		};
+
+		if (XenForo.isRTL())
+		{
+			css.right = $('html').width() - offset.left - this.$input.outerWidth();
+			css.left = 'auto';
+		}
+
+		this.$results.css(css).show();
+		this.resultsVisible = true;
+	},
+
+	resultClick: function(e)
+	{
+		e.stopPropagation();
+
+		this.addValue($(e.currentTarget).data('autoComplete'));
+		this.hideResults();
+		this.$input.focus();
+	},
+
+	resultMouseEnter: function (e)
+	{
+		this.selectResult($(e.currentTarget).index(), true);
+	},
+
+	selectResult: function(shift, absolute)
+	{
+		var sel, children;
+
+		if (!this.$results)
+		{
+			return;
+		}
+
+		if (absolute)
+		{
+			this.selectedResult = shift;
+		}
+		else
+		{
+			this.selectedResult += shift;
+		}
+
+		sel = this.selectedResult;
+		children = this.$results.children();
+		children.each(function(i)
+		{
+			if (i == sel)
+			{
+				$(this).addClass('selected');
+			}
+			else
+			{
+				$(this).removeClass('selected');
+			}
+		});
+
+		if (sel < 0 || sel >= children.length)
+		{
+			this.selectedResult = -1;
+		}
+	},
+
+	insertSelectedResult: function()
+	{
+		var res, ret = false;
+
+		if (!this.resultsVisible)
+		{
+			return false;
+		}
+
+		if (this.selectedResult >= 0)
+		{
+			res = this.$results.children().get(this.selectedResult);
+			if (res)
+			{
+				this.addValue($(res).data('autoComplete'));
+				ret = true;
+			}
+		}
+
+		this.hideResults();
+
+		return ret;
+	},
+
+	addValue: function(value)
+	{
+		if (!this.multiple)
+		{
+			this.$input.val(value);
+		}
+		else
+		{
+			var values = this.getFullValues();
+			if (value != '')
+			{
+				if (values.length)
+				{
+					value = ' ' + value;
+				}
+				values.push(value + this.multiple + ' ');
+			}
+			this.$input.val(values.join(this.multiple));
+		}
+
+		if (this.autoSubmit)
+		{
+			this.$input.closest('form').submit();
+		}
+	},
+
+	getFullValues: function()
+	{
+		var val = this.$input.val();
+
+		if (val == '')
+		{
+			return [];
+		}
+
+		if (!this.multiple)
+		{
+			return [val];
+		}
+		else
+		{
+			splitPos = val.lastIndexOf(this.multiple);
+			if (splitPos == -1)
+			{
+				return [];
+			}
+			else
+			{
+				val = val.substr(0, splitPos);
+				return val.split(this.multiple);
+			}
+		}
+	},
+
+	getPartialValue: function()
+	{
+		var val = this.$input.val(),
+			splitPos;
+
+		if (!this.multiple)
+		{
+			return $.trim(val);
+		}
+		else
+		{
+			splitPos = val.lastIndexOf(this.multiple);
+			if (splitPos == -1)
+			{
+				return $.trim(val);
+			}
+			else
+			{
+				return $.trim(val.substr(splitPos + this.multiple.length));
+			}
+		}
+	}
+};
+
+// Register form controls
+XenForo.register('input, textarea', function(i)
+{
+	var $this = $(this);
+
+	// AcForum
+	if ($this.hasClass('AutoCompleteGeneric'))
+	{
+		XenForo.create('LiquidPro.AutoCompleteGeneric', this);
+	}
+});
+</script>]]></template>
+    <template title="wysiwyg"><![CDATA[<xen:hook name="editor" params="{xen:array 'editorId={$editorId}'}">
+<div>
+	<xen:if is="{$showWysiwyg}">
+		<textarea name="{$formCtrlNameHtml}" id="{$editorId}_html" class="textCtrl MessageEditor BbCodeWysiwygEditor {$editorOptions.extraClass}" style="display:none; {xen:if $height, 'height: {$height};'}" data-css-url="css.php?style={xen:urlencode $visitorStyle.style_id}&amp;css=editor_contents&amp;d={xen:urlencode $visitorStyle.last_modified_date}" data-dialog-url="index.php?editor/dialog&style={$visitorStyle.style_id}" {xen:if $editorOptions.autoSaveUrl, 'data-auto-save-url="{$editorOptions.autoSaveUrl}"'} {xen:if $editorOptions.json, 'data-options="{xen:escape {xen:helper json, $editorOptions.json}}"'}>{$messageHtml}</textarea>
+		<noscript><textarea name="{$formCtrlName}" id="{$editorId}" class="textCtrl MessageEditor {$editorOptions.extraClass}" style="{xen:if $height, 'height: {$height};'}">{$message}</textarea></noscript>
+	<xen:else />
+		<textarea name="{$formCtrlName}" id="{$editorId}" class="textCtrl MessageEditor {$editorOptions.extraClass}" style="{xen:if $height, 'height: {$height};'}">{$message}</textarea>
+	</xen:if>
+	<input type="hidden" name="_xfRelativeResolver" value="{$requestPaths.fullUri}" />
+	
+	<xen:if is="{$showWysiwyg}">
+		<xen:include template="wysiwyg_js_setup" />
+	</xen:if>
+</div>
+</xen:hook>
+
+<xen:edithint template="public:editor_contents.css" />
+<xen:edithint template="public:editor_ui.css" />
+<xen:edithint template="public:form.css" />]]></template>
+    <template title="wysiwyg_js_setup"><![CDATA[<xen:if is="{$debugMode}">
+	<xen:require js="js/redactor/redactor.full.js" />
+<xen:else />
+	<xen:require js="js/redactor/redactor.js" />
+</xen:if>
+<xen:require js="js/xenforo/bb_code_edit.js" />
+<xen:require css="public:editor_ui.css" />
+
+<script>
+if (typeof RELANG === 'undefined')
+{
+	var RELANG = {};
+}
+
+RELANG.xf = {
+	image: "{xen:jsescape {xen:phrase image}}",
+	link: "{xen:jsescape {xen:phrase link}}",
+	link_insert: "{xen:jsescape {xen:phrase link}}",
+	unlink: "{xen:jsescape {xen:phrase unlink}}",
+	quote: "{xen:jsescape {xen:phrase quote}}",
+	code: "{xen:jsescape {xen:phrase code}}",
+	bold: "{xen:jsescape {xen:phrase bold_ctrl_b}}",
+	italic: "{xen:jsescape {xen:phrase italic_ctrl_i}}",
+	fontcolor: "{xen:jsescape {xen:phrase text_color}}",
+	unorderedlist: "{xen:jsescape {xen:phrase unordered_list}}",
+	orderedlist: "{xen:jsescape {xen:phrase ordered_list}}",
+	outdent: "{xen:jsescape {xen:phrase outdent}}",
+	indent: "{xen:jsescape {xen:phrase indent}}",
+	none: "{xen:jsescape {xen:phrase none}}",
+	align_left:	"{xen:jsescape {xen:phrase align_left}}",
+	align_center: "{xen:jsescape {xen:phrase align_center}}",
+	align_right: "{xen:jsescape {xen:phrase align_right}}",
+	deleted: "{xen:jsescape {xen:phrase strike_through}}",
+	underline: "{xen:jsescape {xen:phrase underline_ctrl_u}}",
+	alignment: "{xen:jsescape {xen:phrase alignment}}",
+	undo: "{xen:jsescape {xen:phrase undo_ctrl_z}}",
+	redo: "{xen:jsescape {xen:phrase redo_ctrl_y}}",
+	spoiler: "{xen:jsescape {xen:phrase spoiler}}",
+	insert: "{xen:jsescape {xen:phrase insert_editor_bb_code}}",
+
+	remove_formatting: "{xen:jsescape {xen:phrase remove_formatting}}",
+	font_size: "{xen:jsescape {xen:phrase font_size}}",
+	font_family: "{xen:jsescape {xen:phrase font_family}}",
+	smilies: "{xen:jsescape {xen:phrase smilies}}",
+	media: "{xen:jsescape {xen:phrase media}}",
+	
+	drafts: "{xen:jsescape {xen:phrase drafts}}",
+	save_draft: "{xen:jsescape {xen:phrase save_draft}}",
+	delete_draft: "{xen:jsescape {xen:phrase delete_draft}}",
+	draft_saved: "{xen:jsescape {xen:phrase draft_saved}}",
+	draft_deleted: "{xen:jsescape {xen:phrase draft_deleted}}",
+
+	switch_mode_bb: "{xen:jsescape {xen:phrase use_bb_code_editor}}",
+	switch_mode_rich: "{xen:jsescape {xen:phrase use_rich_text_editor}}",
+	
+	reply_placeholder: "{xen:jsescape {xen:phrase reply_placeholder}}",
+	
+	drop_files_here_to_upload: "{xen:jsescape {xen:phrase drop_files_here_to_upload}}",
+	uploads_are_not_available: "{xen:jsescape {xen:phrase uploads_are_not_available}}"
+};
+</script>]]></template>
+  </admin_templates>
+  <admin_template_modifications>
+    <modification template="forum_edit" modification_key="lpsfForumEdit" description="Add Forum Edit fields" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<!-- slot: after_display_order -->]]></find>
+      <replace><![CDATA[$0
+
+<xen:include template="lpsf_forum_edit"/>]]></replace>
+    </modification>
+    <modification template="user_group_promotion_edit" modification_key="lpsfUserGroupPromotion" description="" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<xen:include template="helper_criteria_user_field" />]]></find>
+      <replace><![CDATA[$0
+<xen:include template="lpsf_user_group_promotion_criteria" />]]></replace>
+    </modification>
+  </admin_template_modifications>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="criteria_user" execute_order="10" callback_class="LiquidPro_SimpleForms_Helper_Criteria" callback_method="UserMatchesCriteria" active="1" hint="" description=""/>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="LiquidPro_SimpleForms_Listener_Proxy" callback_method="loadForumAdminController" active="1" hint="XenForo_ControllerAdmin_Forum" description="XenForo_ControllerAdmin_Forum"/>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="LiquidPro_SimpleForms_Listener_Proxy" callback_method="loadUserAdminController" active="1" hint="XenForo_ControllerAdmin_User" description="XenForo_ControllerAdmin_User"/>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="LiquidPro_SimpleForms_Listener_Proxy" callback_method="loadUserGroupPromotionAdminController" active="1" hint="XenForo_ControllerAdmin_UserGroupPromotion" description="XenForo_ControllerAdmin_UserGroupPromotion"/>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="LiquidPro_SimpleForms_Listener_Proxy" callback_method="loadForumController" active="1" hint="XenForo_ControllerPublic_Forum" description="XenForo_ControllerPublic_Forum"/>
+    <listener event_id="load_class_datawriter" execute_order="10" callback_class="LiquidPro_SimpleForms_Listener_Proxy" callback_method="loadUserDataWriter" active="1" hint="XenForo_DataWriter_User" description="XenForo_DataWriter_User"/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="LiquidPro_SimpleForms_Listener_Proxy" callback_method="loadForumModel" active="1" hint="XenForo_Model_Forum" description="XenForo_Model_Forum"/>
+    <listener event_id="navigation_tabs" execute_order="10" callback_class="LiquidPro_SimpleForms_Listener_Proxy" callback_method="navigationTabs" active="1" hint="" description="Adds the 'Forms' navigation tab."/>
+    <listener event_id="template_create" execute_order="10" callback_class="LiquidPro_SimpleForms_Listener_Proxy" callback_method="templateCreateForumView" active="1" hint="forum_view" description="forum_view"/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups>
+    <group group_id="LiquidPro_SimpleForms" display_order="99999" debug_only="0"/>
+    <option option_id="LiquidPro_SimpleForms_LocalKey" edit_format="template" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="LiquidPro_SimpleForms" display_order="0"/>
+    </option>
+    <option option_id="deleteGlobalFieldsHandling" edit_format="radio" data_type="string" can_backup="1">
+      <default_value>convert</default_value>
+      <edit_format_params>delete=Delete Fields and Data
+convert=Convert Fields to Individual Fields and Preserve Data
+prevent=Prevent In-Use Global Fields From Being Deleted</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="LiquidPro_SimpleForms" display_order="220"/>
+    </option>
+    <option option_id="deleteUserLogic" edit_format="radio" data_type="string" can_backup="1">
+      <default_value>delete</default_value>
+      <edit_format_params>delete=Delete Responses
+reassign=Reassign to Guest</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="LiquidPro_SimpleForms" display_order="210"/>
+    </option>
+    <option option_id="disableFormsTab" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="LiquidPro_SimpleForms" display_order="110"/>
+    </option>
+    <option option_id="formsPerPage" edit_format="spinbox" data_type="positive_integer" can_backup="1">
+      <default_value>20</default_value>
+      <edit_format_params>min=5
+step=5</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="LiquidPro_SimpleForms" display_order="120"/>
+    </option>
+    <option option_id="lpsfRatingMax" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
+      <default_value>10</default_value>
+      <edit_format_params>min=1
+max=10</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="LiquidPro_SimpleForms" display_order="310"/>
+    </option>
+    <option option_id="lpsfSortOrder" edit_format="radio" data_type="string" can_backup="1">
+      <default_value>alpha</default_value>
+      <edit_format_params>alpha=Alphabetically
+custom=Custom Display Order</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="LiquidPro_SimpleForms" display_order="130"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups>
+      <permission_group permission_group_id="form"/>
+    </permission_groups>
+    <permissions>
+      <permission permission_group_id="form" permission_id="respondToForms" permission_type="flag" default_value="unset" interface_group_id="formPermissions" display_order="1010"/>
+      <permission permission_group_id="form" permission_id="viewFormsList" permission_type="flag" default_value="unset" interface_group_id="formPermissions" display_order="1000"/>
+    </permissions>
+    <interface_groups>
+      <interface_group interface_group_id="formPermissions" display_order="1000"/>
+    </interface_groups>
+  </permissions>
+  <phrases>
+    <phrase title="add_field" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Add Field]]></phrase>
+    <phrase title="add_form_destination" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Add Destination]]></phrase>
+    <phrase title="add_global_field" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Add Global Field]]></phrase>
+    <phrase title="add_template_field" version_id="13" version_string="1.1.1"><![CDATA[Add Template Field]]></phrase>
+    <phrase title="admin_navigation_createForm" version_id="0" version_string="1.0.0"><![CDATA[Create New Simple Form]]></phrase>
+    <phrase title="admin_navigation_displaySimpleForms" version_id="0" version_string="1.0.0"><![CDATA[Display Simple Forms]]></phrase>
+    <phrase title="admin_navigation_documentation" version_id="21901" version_string="2.1.9"><![CDATA[Documentation]]></phrase>
+    <phrase title="admin_navigation_globalFields" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Global Fields]]></phrase>
+    <phrase title="admin_navigation_simpleForms" version_id="0" version_string="1.0.0"><![CDATA[Simple Forms]]></phrase>
+    <phrase title="admin_navigation_templateFields" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Template Fields]]></phrase>
+    <phrase title="admin_permission_form" version_id="0" version_string="1.0.0"><![CDATA[Manage Simple Forms]]></phrase>
+    <phrase title="allow_multiple_responses" version_id="0" version_string="1.0.0"><![CDATA[Allow Multiple Responses]]></phrase>
+    <phrase title="complete_message" version_id="3" version_string="1.0.0 Beta 1"><![CDATA[Complete Message]]></phrase>
+    <phrase title="complete_message_explain" version_id="3" version_string="1.0.0 Beta 1"><![CDATA[Enter the short message you would like to show the user when the form is completed.]]></phrase>
+    <phrase title="confirm_deletion_of_destination" version_id="0" version_string="1.0.0"><![CDATA[Confirm Deletion of Destination]]></phrase>
+    <phrase title="confirm_deletion_of_form" version_id="0" version_string="1.0.0"><![CDATA[Confirm Deletion of Form]]></phrase>
+    <phrase title="confirm_deletion_of_response" version_id="11" version_string="1.0.0"><![CDATA[Confirm Deletion of Response]]></phrase>
+    <phrase title="conversation_sender_and_recipient_cannot_be_the_same" version_id="0" version_string="1.0.0"><![CDATA[The conversation sender and recipient cannot be the same.]]></phrase>
+    <phrase title="create_new_destination" version_id="0" version_string="1.0.0"><![CDATA[Create New Destination]]></phrase>
+    <phrase title="create_new_form" version_id="0" version_string="1.0.0"><![CDATA[Create New Form]]></phrase>
+    <phrase title="create_new_form_destination" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Create New Form Destination]]></phrase>
+    <phrase title="create_new_global_field" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Create New Global Field]]></phrase>
+    <phrase title="create_new_template_field" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Create New Template Field]]></phrase>
+    <phrase title="custom_css" version_id="13" version_string="1.1.1"><![CDATA[Custom CSS]]></phrase>
+    <phrase title="custom_css_explain" version_id="13" version_string="1.1.1"><![CDATA[Custom CSS to be applied to the form.]]></phrase>
+    <phrase title="default_value_for_field" version_id="11" version_string="1.0.0"><![CDATA[This is the default value for the field. It will be pre-populated when a user responds to the form.]]></phrase>
+    <phrase title="delete_destination" version_id="0" version_string="1.0.0"><![CDATA[Delete Destination]]></phrase>
+    <phrase title="delete_form" version_id="0" version_string="1.0.0"><![CDATA[Delete Form]]></phrase>
+    <phrase title="delete_form_destination" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Delete Form Destination]]></phrase>
+    <phrase title="design" version_id="21901" version_string="2.1.9"><![CDATA[Design/HTML]]></phrase>
+    <phrase title="destination" version_id="11" version_string="1.0.0"><![CDATA[Destination]]></phrase>
+    <phrase title="destinations" version_id="0" version_string="1.0.0"><![CDATA[Form Destinations]]></phrase>
+    <phrase title="destination_not_enabled" version_id="12" version_string="1.1.0"><![CDATA[You cannot redirect to the {name} destination because it is not enabled.]]></phrase>
+    <phrase title="destination_option_conversation_enable_attachments" version_id="12" version_string="1.1.0"><![CDATA[Enable Attachments]]></phrase>
+    <phrase title="destination_option_conversation_enable_attachments_choice_enabled" version_id="12" version_string="1.1.0"><![CDATA[]]></phrase>
+    <phrase title="destination_option_conversation_enable_attachments_desc" version_id="11" version_string="1.0.0"><![CDATA[Check this to enable attachments to be uploaded to this destination.]]></phrase>
+    <phrase title="destination_option_conversation_hide_empty_fields" version_id="12" version_string="1.1.0"><![CDATA[Hide Empty Fields]]></phrase>
+    <phrase title="destination_option_conversation_hide_empty_fields_choice_enabled" version_id="12" version_string="1.1.0"><![CDATA[]]></phrase>
+    <phrase title="destination_option_conversation_hide_empty_fields_desc" version_id="11" version_string="1.0.0"><![CDATA[Check this to hide fields that the user did not respond to.]]></phrase>
+    <phrase title="destination_option_conversation_locked" version_id="0" version_string="1.0.0"><![CDATA[Lock Conversation]]></phrase>
+    <phrase title="destination_option_conversation_locked_choice_1" version_id="0" version_string="1.0.0"><![CDATA[ ]]></phrase>
+    <phrase title="destination_option_conversation_locked_desc" version_id="0" version_string="1.0.0"><![CDATA[Check this to lock the conversation upon creation to ensure no one else is added.]]></phrase>
+    <phrase title="destination_option_conversation_message_template" version_id="0" version_string="1.0.0"><![CDATA[Conversation Template]]></phrase>
+    <phrase title="destination_option_conversation_message_template_desc" version_id="0" version_string="1.0.0"><![CDATA[Enter in the template you wish to use for the form data submitted.  You can reference fields by using $fields.fieldname.title and $fields.fieldname.value.  (Example: $fields.first_name.title: $fields.first_name.value)]]></phrase>
+    <phrase title="destination_option_conversation_recipient_user_id" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Recipient User IDs]]></phrase>
+    <phrase title="destination_option_conversation_recipient_user_id_desc" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Enter in the user ids for the recipient of this conversation. Multiple user ids can be separated by a comma.]]></phrase>
+    <phrase title="destination_option_conversation_send_by_user_id" version_id="0" version_string="1.0.0"><![CDATA[Sender User ID]]></phrase>
+    <phrase title="destination_option_conversation_send_by_user_id_desc" version_id="200" version_string="2.0.0"><![CDATA[Enter in the user id for the conversation starter. Leave this blank to let this be the submitting user. Note: If the submitting user is a guest, this destination will be skipped entirely. Guests cannot start conversations.]]></phrase>
+    <phrase title="destination_option_conversation_title_template" version_id="0" version_string="1.0.0"><![CDATA[Title]]></phrase>
+    <phrase title="destination_option_conversation_title_template_desc" version_id="22000" version_string="2.2.0"><![CDATA[Enter the title for the conversation.  You can use {$visitor.username} and {$fields.fieldname.value} options within this section as well.]]></phrase>
+    <phrase title="destination_option_email_enable_attachments" version_id="12" version_string="1.1.0"><![CDATA[Enable Attachments]]></phrase>
+    <phrase title="destination_option_email_enable_attachments_choice_enabled" version_id="12" version_string="1.1.0"><![CDATA[]]></phrase>
+    <phrase title="destination_option_email_enable_attachments_desc" version_id="11" version_string="1.0.0"><![CDATA[Check this to enable attachments to be uploaded to this destination.]]></phrase>
+    <phrase title="destination_option_email_format" version_id="0" version_string="1.0.0"><![CDATA[Email Format]]></phrase>
+    <phrase title="destination_option_email_format_choice_html" version_id="0" version_string="1.0.0"><![CDATA[HTML]]></phrase>
+    <phrase title="destination_option_email_format_choice_plain" version_id="0" version_string="1.0.0"><![CDATA[Plain Text]]></phrase>
+    <phrase title="destination_option_email_format_desc" version_id="0" version_string="1.0.0"><![CDATA[Format of the email to send.]]></phrase>
+    <phrase title="destination_option_email_hide_empty_fields" version_id="12" version_string="1.1.0"><![CDATA[Hide Empty Fields]]></phrase>
+    <phrase title="destination_option_email_hide_empty_fields_choice_enabled" version_id="12" version_string="1.1.0"><![CDATA[]]></phrase>
+    <phrase title="destination_option_email_hide_empty_fields_desc" version_id="11" version_string="1.0.0"><![CDATA[Check this to hide fields that the user did not respond to.]]></phrase>
+    <phrase title="destination_option_email_message_template" version_id="0" version_string="1.0.0"><![CDATA[Email Template]]></phrase>
+    <phrase title="destination_option_email_message_template_desc" version_id="0" version_string="1.0.0"><![CDATA[Enter in the template you wish to use for the form data submitted.  You can reference fields by using $fields.fieldname.title and $fields.fieldname.value.  (Example: $fields.first_name.title: $fields.first_name.value)]]></phrase>
+    <phrase title="destination_option_email_recipient_email" version_id="0" version_string="1.0.0"><![CDATA[Recipient Email]]></phrase>
+    <phrase title="destination_option_email_recipient_email_desc" version_id="0" version_string="1.0.0"><![CDATA[Enter in the email address for the receiving user.]]></phrase>
+    <phrase title="destination_option_email_reply_to" version_id="21500" version_string="2.1.5"><![CDATA[Reply To Email]]></phrase>
+    <phrase title="destination_option_email_reply_to_desc" version_id="21500" version_string="2.1.5"><![CDATA[Enter in the e-mail address for the reply to address.]]></phrase>
+    <phrase title="destination_option_email_sender_email" version_id="0" version_string="1.0.0"><![CDATA[Sender Email]]></phrase>
+    <phrase title="destination_option_email_sender_email_desc" version_id="0" version_string="1.0.0"><![CDATA[Enter in the email address for the sender. Enter a field id if you want this to be set by the submitting user.]]></phrase>
+    <phrase title="destination_option_email_subject_template" version_id="0" version_string="1.0.0"><![CDATA[Subject]]></phrase>
+    <phrase title="destination_option_email_subject_template_desc" version_id="22000" version_string="2.2.0"><![CDATA[Enter the subject for the email. You can use {$visitor.username} and {$fields.fieldname.value} options within this section as well.]]></phrase>
+    <phrase title="destination_option_post_enable_attachments" version_id="12" version_string="1.1.0"><![CDATA[Enable Attachments]]></phrase>
+    <phrase title="destination_option_post_enable_attachments_choice_enabled" version_id="12" version_string="1.1.0"><![CDATA[]]></phrase>
+    <phrase title="destination_option_post_enable_attachments_desc" version_id="11" version_string="1.0.0"><![CDATA[Check this to enable attachments to be uploaded to this destination.]]></phrase>
+    <phrase title="destination_option_post_hide_empty_fields" version_id="12" version_string="1.1.0"><![CDATA[Hide Empty Fields]]></phrase>
+    <phrase title="destination_option_post_hide_empty_fields_choice_enabled" version_id="12" version_string="1.1.0"><![CDATA[]]></phrase>
+    <phrase title="destination_option_post_hide_empty_fields_desc" version_id="11" version_string="1.0.0"><![CDATA[Check this to hide fields that the user did not respond to.]]></phrase>
+    <phrase title="destination_option_post_message_template" version_id="0" version_string="1.0.0"><![CDATA[Post Template]]></phrase>
+    <phrase title="destination_option_post_message_template_desc" version_id="0" version_string="1.0.0"><![CDATA[Enter in the template you wish to use for the form data submitted.  You can reference fields by using $fields.fieldname.title and $fields.fieldname.value.  (Example: $fields.first_name.title: $fields.first_name.value)]]></phrase>
+    <phrase title="destination_option_post_post_by_user_id" version_id="0" version_string="1.0.0"><![CDATA[Poster ID]]></phrase>
+    <phrase title="destination_option_post_post_by_user_id_desc" version_id="0" version_string="1.0.0"><![CDATA[Enter in the user id for the creator of this new post. Leave this blank to let this be the submitting user.]]></phrase>
+    <phrase title="destination_option_post_thread_id" version_id="0" version_string="1.0.0"><![CDATA[Thread ID]]></phrase>
+    <phrase title="destination_option_post_thread_id_desc" version_id="0" version_string="1.0.0"><![CDATA[Enter in the thread id in which to create this new post in.]]></phrase>
+    <phrase title="destination_option_thread_automatically_watch" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Automatically Watch]]></phrase>
+    <phrase title="destination_option_thread_automatically_watch_choice_" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Do Not Watch]]></phrase>
+    <phrase title="destination_option_thread_automatically_watch_choice_watch_email" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Watch and Send E-mail]]></phrase>
+    <phrase title="destination_option_thread_automatically_watch_choice_watch_no_email" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Watch and Don't Send E-mail]]></phrase>
+    <phrase title="destination_option_thread_automatically_watch_desc" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="destination_option_thread_enable_attachments" version_id="12" version_string="1.1.0"><![CDATA[Enable Attachments]]></phrase>
+    <phrase title="destination_option_thread_enable_attachments_choice_enabled" version_id="12" version_string="1.1.0"><![CDATA[]]></phrase>
+    <phrase title="destination_option_thread_enable_attachments_desc" version_id="11" version_string="1.0.0"><![CDATA[Check this to enable attachments to be uploaded to this destination.]]></phrase>
+    <phrase title="destination_option_thread_forum_node_id" version_id="0" version_string="1.0.0"><![CDATA[Forum Node ID]]></phrase>
+    <phrase title="destination_option_thread_forum_node_id_desc" version_id="0" version_string="1.0.0"><![CDATA[Enter in the forum node id in which to create this new thread.]]></phrase>
+    <phrase title="destination_option_thread_hide_empty_fields" version_id="12" version_string="1.1.0"><![CDATA[Hide Empty Fields]]></phrase>
+    <phrase title="destination_option_thread_hide_empty_fields_choice_enabled" version_id="12" version_string="1.1.0"><![CDATA[]]></phrase>
+    <phrase title="destination_option_thread_hide_empty_fields_desc" version_id="11" version_string="1.0.0"><![CDATA[Check this to hide fields that the user did not respond to.]]></phrase>
+    <phrase title="destination_option_thread_lock" version_id="21500" version_string="2.1.5"><![CDATA[Lock Thread]]></phrase>
+    <phrase title="destination_option_thread_lock_choice_1" version_id="21500" version_string="2.1.5"><![CDATA[]]></phrase>
+    <phrase title="destination_option_thread_lock_desc" version_id="21500" version_string="2.1.5"><![CDATA[Check this to lock the thread that is created.]]></phrase>
+    <phrase title="destination_option_thread_message_template" version_id="0" version_string="1.0.0"><![CDATA[Thread Template]]></phrase>
+    <phrase title="destination_option_thread_message_template_desc" version_id="0" version_string="1.0.0"><![CDATA[Enter in the template you wish to use for the form data submitted.  You can reference fields by using $fields.fieldname.title and $fields.fieldname.value.  (Example: $fields.first_name.title: $fields.first_name.value)]]></phrase>
+    <phrase title="destination_option_thread_poll_choices" version_id="5" version_string="1.0.0 Beta 2"><![CDATA[Possible Choices]]></phrase>
+    <phrase title="destination_option_thread_poll_multiple" version_id="5" version_string="1.0.0 Beta 2"><![CDATA[]]></phrase>
+    <phrase title="destination_option_thread_poll_multiple_choice_1" version_id="5" version_string="1.0.0 Beta 2"><![CDATA[Allow selection of multiple responses]]></phrase>
+    <phrase title="destination_option_thread_poll_multiple_desc" version_id="5" version_string="1.0.0 Beta 2"><![CDATA[]]></phrase>
+    <phrase title="destination_option_thread_poll_public_votes" version_id="5" version_string="1.0.0 Beta 2"><![CDATA[]]></phrase>
+    <phrase title="destination_option_thread_poll_public_votes_choice_1" version_id="5" version_string="1.0.0 Beta 2"><![CDATA[Display votes publicly]]></phrase>
+    <phrase title="destination_option_thread_poll_public_votes_desc" version_id="5" version_string="1.0.0 Beta 2"><![CDATA[]]></phrase>
+    <phrase title="destination_option_thread_poll_question" version_id="5" version_string="1.0.0 Beta 2"><![CDATA[Poll Question]]></phrase>
+    <phrase title="destination_option_thread_poll_question_desc" version_id="5" version_string="1.0.0 Beta 2"><![CDATA[Question to be displayed on the poll.]]></phrase>
+    <phrase title="destination_option_thread_post_by_user_id" version_id="0" version_string="1.0.0"><![CDATA[Poster ID]]></phrase>
+    <phrase title="destination_option_thread_post_by_user_id_desc" version_id="0" version_string="1.0.0"><![CDATA[Enter in the user id for the creator of this new thread. Leave this blank to let this be the submitting user.]]></phrase>
+    <phrase title="destination_option_thread_prefix" version_id="200" version_string="2.0.0"><![CDATA[Default Thread Prefix]]></phrase>
+    <phrase title="destination_option_thread_prefix_desc" version_id="200" version_string="2.0.0"><![CDATA[The default thread prefix for threads being created by this destination. Leave blank for no thread prefix.]]></phrase>
+    <phrase title="destination_option_thread_sticky" version_id="0" version_string="1.0.0"><![CDATA[Enable Sticky]]></phrase>
+    <phrase title="destination_option_thread_sticky_choice_1" version_id="0" version_string="1.0.0"><![CDATA[ ]]></phrase>
+    <phrase title="destination_option_thread_sticky_desc" version_id="0" version_string="1.0.0"><![CDATA[Check this to sticky this new thread upon creation.]]></phrase>
+    <phrase title="destination_option_thread_title_template" version_id="0" version_string="1.0.0"><![CDATA[Title]]></phrase>
+    <phrase title="destination_option_thread_title_template_desc" version_id="0" version_string="1.0.0"><![CDATA[Enter the title of the thread.  You may use {$visitor.username} for the submitters username and any other template variables.]]></phrase>
+    <phrase title="destination_type" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Destination Type]]></phrase>
+    <phrase title="edit_destination" version_id="0" version_string="1.0.0"><![CDATA[Edit Destination]]></phrase>
+    <phrase title="edit_form" version_id="0" version_string="1.0.0"><![CDATA[Edit Form]]></phrase>
+    <phrase title="edit_form_destination" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Edit Form Destination]]></phrase>
+    <phrase title="edit_global_field" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Edit Global Field]]></phrase>
+    <phrase title="edit_response" version_id="11" version_string="1.0.0"><![CDATA[Edit Response]]></phrase>
+    <phrase title="edit_template_field" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Edit Template Field]]></phrase>
+    <phrase title="export_to_csv" version_id="0" version_string="1.0.0"><![CDATA[Export to CSV]]></phrase>
+    <phrase title="field" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Field]]></phrase>
+    <phrase title="fields" version_id="0" version_string="1.0.0"><![CDATA[Form Fields]]></phrase>
+    <phrase title="fields_associated_with_global_field" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[There are fields associated with this global field.]]></phrase>
+    <phrase title="field_is_active" version_id="13" version_string="1.1.1"><![CDATA[Field is active]]></phrase>
+    <phrase title="field_label" version_id="0" version_string="1.0.0"><![CDATA[Label]]></phrase>
+    <phrase title="field_template" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Field Template]]></phrase>
+    <phrase title="find_form" version_id="0" version_string="1.0.0"><![CDATA[Find Form]]></phrase>
+    <phrase title="forms" version_id="0" version_string="1.0.0"><![CDATA[Forms]]></phrase>
+    <phrase title="forms_tab" global_cache="1" version_id="0" version_string="1.0.0"><![CDATA[Forms]]></phrase>
+    <phrase title="form_destination_is_active" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Form destination is active]]></phrase>
+    <phrase title="form_not_available_any_longer" version_id="20300" version_string="2.0.3"><![CDATA[This form is no longer available.  It stopped accepting responses on {end_date} at {end_time}.]]></phrase>
+    <phrase title="form_not_available_yet" version_id="20300" version_string="2.0.3"><![CDATA[This form is not yet available.  It will start accepting responses on {start_date} at {start_time}.]]></phrase>
+    <phrase title="form_permissions" version_id="0" version_string="1.0.0"><![CDATA[Form Permissions]]></phrase>
+    <phrase title="general" version_id="0" version_string="1.0.0"><![CDATA[General Settings]]></phrase>
+    <phrase title="global_field" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Global Field]]></phrase>
+    <phrase title="global_fields" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Global Fields]]></phrase>
+    <phrase title="handler_class" version_id="0" version_string="1.0.0"><![CDATA[Handler Class]]></phrase>
+    <phrase title="hide_from_list" version_id="3" version_string="1.0.0 Beta 1"><![CDATA[Hide From Form List]]></phrase>
+    <phrase title="hide_from_list_hint" version_id="3" version_string="1.0.0 Beta 1"><![CDATA[Hide this form from the form list by checking this box.]]></phrase>
+    <phrase title="hide_title" version_id="3" version_string="1.0.0 Beta 1"><![CDATA[Hide this title from display?]]></phrase>
+    <phrase title="if_entered_url_to_form_not_contain_id_change_breaks_urls" version_id="0" version_string="1.0.0"><![CDATA[If entered, the URL to this form will not contain an ID. Use a-z, 0-9, _, and - characters only. Note that once specified, changing this value will cause URLs to be broken.]]></phrase>
+    <phrase title="if_selected_users_only_view_form_if_granted_permissions" version_id="0" version_string="1.0.0"><![CDATA[If selected, users will only be able to view this form if they are explicitly granted permissions.]]></phrase>
+    <phrase title="import_form" version_id="11" version_string="1.0.0"><![CDATA[Import Form]]></phrase>
+    <phrase title="import_from_file_on_server" version_id="11" version_string="1.0.0"><![CDATA[Import from file on server]]></phrase>
+    <phrase title="import_from_uploaded_file" version_id="20300" version_string="2.0.3"><![CDATA[Import from uploaded file]]></phrase>
+    <phrase title="license_key_invalid_x" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[The license key you entered is invalid for the following reason:  {message}. If you are having trouble with your license, please contact <a href="https://liquidpro.net/clients/clientarea.php" target="_blank">LiquidPro Support</a>.]]></phrase>
+    <phrase title="liquidpro_simpleforms_license_expired" version_id="0" version_string="1.0.0"><![CDATA[Gee willikers Batman, your license has expired!  Call the bat-mobile.]]></phrase>
+    <phrase title="liquidpro_simpleforms_license_invalid" version_id="0" version_string="1.0.0"><![CDATA[Do what you want, âcause a pirate is free,<br />
+YOU ARE A PIRATE!<br />
+Yar har, fiddle di dee,<br />
+Being a pirate is alright to be,<br />
+Do what you want âcause a pirate is free,<br />
+<strong>You are a pirate!</strong><br /><br />
+Also, your license is invalid :).]]></phrase>
+    <phrase title="liquidpro_simpleforms_license_suspended" version_id="0" version_string="1.0.0"><![CDATA[Do you like being a bum?  Do you like not paying your bills?  This is what happens when you don't PAY WHAT YOU OWE!  Get em' Johnny!
+<br /><br />
+Might want to handle that suspended license before someone gets hurt...]]></phrase>
+    <phrase title="lpsf_attachment_required" version_id="200" version_string="2.0.0"><![CDATA[An attachment is required for this form.]]></phrase>
+    <phrase title="lpsf_button_label" version_id="20300" version_string="2.0.3"><![CDATA[Button Label]]></phrase>
+    <phrase title="lpsf_clear_all_responses" version_id="20300" version_string="2.0.3"><![CDATA[Clear All Responses]]></phrase>
+    <phrase title="lpsf_confirm_clearing_of_all_responses" version_id="20300" version_string="2.0.3"><![CDATA[Confirm clearing all responses]]></phrase>
+    <phrase title="lpsf_copy" version_id="22000" version_string="2.2.0"><![CDATA[Copy]]></phrase>
+    <phrase title="lpsf_date" version_id="20300" version_string="2.0.3"><![CDATA[Date]]></phrase>
+    <phrase title="lpsf_datetime" version_id="21901" version_string="2.1.9"><![CDATA[Date Time]]></phrase>
+    <phrase title="lpsf_default_form" version_id="20300" version_string="2.0.3"><![CDATA[Default Form]]></phrase>
+    <phrase title="lpsf_delete_response" version_id="21900" version_string="2.1.9"><![CDATA[Delete Response]]></phrase>
+    <phrase title="lpsf_destination_name" version_id="21901" version_string="2.1.9"><![CDATA[Destination Name]]></phrase>
+    <phrase title="lpsf_end_date" version_id="20300" version_string="2.0.3"><![CDATA[End date]]></phrase>
+    <phrase title="lpsf_footer_html" version_id="21901" version_string="2.1.9"><![CDATA[Footer HTML]]></phrase>
+    <phrase title="lpsf_form_is_active" version_id="20100" version_string="2.0.1"><![CDATA[Form is active]]></phrase>
+    <phrase title="lpsf_header_html" version_id="21901" version_string="2.1.9"><![CDATA[Header HTML]]></phrase>
+    <phrase title="lpsf_in_selected_timezone" version_id="20300" version_string="2.0.3"><![CDATA[In the selected timezone]]></phrase>
+    <phrase title="lpsf_in_visitor_timezone" version_id="20300" version_string="2.0.3"><![CDATA[In the visitor's timezone]]></phrase>
+    <phrase title="lpsf_liquidpro_simpleforms_criteria" version_id="200" version_string="2.0.0"><![CDATA[LiquidPro Simple Forms Criteria]]></phrase>
+    <phrase title="lpsf_move_down" version_id="200" version_string="2.0.0"><![CDATA[Move Down]]></phrase>
+    <phrase title="lpsf_move_up" version_id="200" version_string="2.0.0"><![CDATA[Move Up]]></phrase>
+    <phrase title="lpsf_name" version_id="21901" version_string="2.1.9"><![CDATA[Name]]></phrase>
+    <phrase title="lpsf_please_confirm_want_to_clear_all_responses" version_id="20300" version_string="2.0.3"><![CDATA[Please confirm you want to clear all responses for this form.]]></phrase>
+    <phrase title="lpsf_please_enter_a_datetime_in_format" version_id="21901" version_string="2.1.9"><![CDATA[Please enter a datetime in format 2015-04-26 08:00am]]></phrase>
+    <phrase title="lpsf_please_enter_a_date_in_format" version_id="21901" version_string="2.1.9"><![CDATA[Please enter a date in format 2015-04-26]]></phrase>
+    <phrase title="lpsf_please_enter_a_time_in_format" version_id="21901" version_string="2.1.9"><![CDATA[Please enter a time in format 8:00am]]></phrase>
+    <phrase title="lpsf_please_enter_a_valid_datetime" version_id="21901" version_string="2.1.9"><![CDATA[Please enter a valid datetime]]></phrase>
+    <phrase title="lpsf_please_enter_a_valid_time" version_id="21901" version_string="2.1.9"><![CDATA[Please enter a valid time]]></phrase>
+    <phrase title="lpsf_post_reply" version_id="20300" version_string="2.0.3"><![CDATA[Post Reply]]></phrase>
+    <phrase title="lpsf_post_text" version_id="200" version_string="2.0.0"><![CDATA[Post-Text]]></phrase>
+    <phrase title="lpsf_pre_text" version_id="200" version_string="2.0.0"><![CDATA[Pre-Text]]></phrase>
+    <phrase title="lpsf_rating" version_id="21400" version_string="2.1.4"><![CDATA[Rating]]></phrase>
+    <phrase title="lpsf_rating_separator" version_id="21400" version_string="2.1.4"><![CDATA[ out of ]]></phrase>
+    <phrase title="lpsf_redirect_form" version_id="200" version_string="2.0.0"><![CDATA[Back to form]]></phrase>
+    <phrase title="lpsf_replace_new_thread_button" version_id="20300" version_string="2.0.3"><![CDATA[Replace Create New Thread button]]></phrase>
+    <phrase title="lpsf_require_attachment" version_id="200" version_string="2.0.0"><![CDATA[Require attachment]]></phrase>
+    <phrase title="lpsf_require_attachment_hint" version_id="200" version_string="2.0.0"><![CDATA[Require an attachment to submit the form]]></phrase>
+    <phrase title="lpsf_responses_cleared" version_id="20300" version_string="2.0.3"><![CDATA[Responses cleared.]]></phrase>
+    <phrase title="lpsf_save_and_exit_form" version_id="200" version_string="2.0.0"><![CDATA[Save and Exit Form]]></phrase>
+    <phrase title="lpsf_save_form" version_id="200" version_string="2.0.0"><![CDATA[Save Form]]></phrase>
+    <phrase title="lpsf_set_form_here_to_replace_create_new_thread_button" version_id="20300" version_string="2.0.3"><![CDATA[If specified, the "Create New Thread" button can be replaced by a button that will direct the user to respond to the specified form.]]></phrase>
+    <phrase title="lpsf_start_date" version_id="20300" version_string="2.0.3"><![CDATA[Start date]]></phrase>
+    <phrase title="lpsf_there_are_no_responses" version_id="200" version_string="2.0.0"><![CDATA[There are no responses.]]></phrase>
+    <phrase title="lpsf_this_is_unique_identifier_for_field" version_id="200" version_string="2.0.0"><![CDATA[This is a unique identifier for the field.]]></phrase>
+    <phrase title="lpsf_time" version_id="20300" version_string="2.0.3"><![CDATA[Time]]></phrase>
+    <phrase title="lpsf_user_responded_any_form" version_id="200" version_string="2.0.0"><![CDATA[User responded to any form]]></phrase>
+    <phrase title="lpsf_user_responded_to_any_of_selected_forms" version_id="200" version_string="2.0.0"><![CDATA[User responded to any of the selected forms]]></phrase>
+    <phrase title="lpsf_viewing_form" version_id="20200" version_string="2.0.2"><![CDATA[Viewing form]]></phrase>
+    <phrase title="lpsf_view_form" version_id="200" version_string="2.0.0"><![CDATA[View Form]]></phrase>
+    <phrase title="manage_responses" version_id="11" version_string="1.0.0"><![CDATA[Manage Responses]]></phrase>
+    <phrase title="maximum_responses_met" version_id="11" version_string="1.0.0"><![CDATA[- Maximum Responses Met!]]></phrase>
+    <phrase title="max_responses_allowed" version_id="0" version_string="1.0.0"><![CDATA[Maximum Responses]]></phrase>
+    <phrase title="max_responses_allowed_explain" version_id="0" version_string="1.0.0"><![CDATA[Enter the maximum number of responses you will allow for this form.  Enter 0 to disable this feature.]]></phrase>
+    <phrase title="max_responses_per_user_allowed" version_id="0" version_string="1.0.0"><![CDATA[Maximum Responses Per User]]></phrase>
+    <phrase title="max_responses_per_user_allowed_explain" version_id="0" version_string="1.0.0"><![CDATA[Set the maximum number of responses a user can submit.]]></phrase>
+    <phrase title="max_responses_per_user_reached" version_id="11" version_string="1.0.0"><![CDATA[You have exceeded the number of responses allowed per user for this form.]]></phrase>
+    <phrase title="max_responses_reached" version_id="11" version_string="1.0.0"><![CDATA[The maximum number of responses for this form has been reached.]]></phrase>
+    <phrase title="minimum_length" version_id="11" version_string="1.0.0"><![CDATA[Minimum Length]]></phrase>
+    <phrase title="node_type_SimpleForm" version_id="0" version_string="1.0.0"><![CDATA[Simple Form]]></phrase>
+    <phrase title="no_destinations_have_been_added_yet" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[No destinations have been added yet.]]></phrase>
+    <phrase title="no_fields_have_been_added_yet" version_id="0" version_string="1.0.0"><![CDATA[No fields have been added yet.]]></phrase>
+    <phrase title="no_forms_available" version_id="0" version_string="1.0.0"><![CDATA[There are no forms available.]]></phrase>
+    <phrase title="option_deleteGlobalFieldsHandling" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Delete Global Fields Handling]]></phrase>
+    <phrase title="option_deleteGlobalFieldsHandling_explain" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[How to handle what happens to in-use global fields.]]></phrase>
+    <phrase title="option_deleteUserLogic" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[User Deletion Logic]]></phrase>
+    <phrase title="option_deleteUserLogic_explain" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[How to handle what happens to a user's responses when the user is deleted. You can choose to delete the responses by that user, or reassign the responses to "Guest."]]></phrase>
+    <phrase title="option_disableFormsTab" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Disable Forms Tab]]></phrase>
+    <phrase title="option_disableFormsTab_explain" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Check this option to disable the display of the forms tab on the navigation bar.]]></phrase>
+    <phrase title="option_formsPerPage" version_id="0" version_string="1.0.0"><![CDATA[Forms to List Per-Page]]></phrase>
+    <phrase title="option_formsPerPage_explain" version_id="0" version_string="1.0.0"><![CDATA[Limit the number of forms to show on each page of the forms list.]]></phrase>
+    <phrase title="option_group_LiquidPro_SimpleForms" version_id="0" version_string="1.0.0"><![CDATA[LiquidPro Simple Forms]]></phrase>
+    <phrase title="option_group_LiquidPro_SimpleForms_description" version_id="10" version_string="1.0.0"><![CDATA[Set global options for your Simple Forms listing.]]></phrase>
+    <phrase title="option_LiquidPro_SimpleForms_LocalKey" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Local Key]]></phrase>
+    <phrase title="option_LiquidPro_SimpleForms_LocalKey_explain" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[This is for internal use only.]]></phrase>
+    <phrase title="option_lpsfRatingMax" version_id="22000" version_string="2.2.0"><![CDATA[Maximum Rating]]></phrase>
+    <phrase title="option_lpsfRatingMax_explain" version_id="22000" version_string="2.2.0"><![CDATA[When using the rating field, what should the maximum rating be? For example, for ratings of 1-5, specify 5. For ratings of 1-10, specify 10.]]></phrase>
+    <phrase title="option_lpsfSortOrder" version_id="21502" version_string="2.1.5"><![CDATA[Sort Order]]></phrase>
+    <phrase title="option_lpsfSortOrder_explain" version_id="21502" version_string="2.1.5"><![CDATA[How to sort the forms when displayed on the forms listing page.]]></phrase>
+    <phrase title="permission_form_respondToForms" version_id="0" version_string="1.0.0"><![CDATA[Respond to forms]]></phrase>
+    <phrase title="permission_form_viewFormsList" version_id="0" version_string="1.0.0"><![CDATA[View forms list]]></phrase>
+    <phrase title="permission_group_form" version_id="0" version_string="1.0.0"><![CDATA[LiquidPro Simple Forms Permissions]]></phrase>
+    <phrase title="permission_interface_formPermissions" version_id="0" version_string="1.0.0"><![CDATA[LiquidPro Simple Forms Permissions]]></phrase>
+    <phrase title="placeholder" version_id="13" version_string="1.1.1"><![CDATA[Placeholder]]></phrase>
+    <phrase title="placeholder_for_field" version_id="13" version_string="1.1.1"><![CDATA[This is the placeholder for the field. It will appear when the field is blank.]]></phrase>
+    <phrase title="please_confirm_want_to_delete_destination" version_id="0" version_string="1.0.0"><![CDATA[Please confirm that you want to delete the following destination]]></phrase>
+    <phrase title="please_confirm_want_to_delete_field" version_id="0" version_string="1.0.0"><![CDATA[Please confirm that you want to delete the following field]]></phrase>
+    <phrase title="please_confirm_want_to_delete_form" version_id="0" version_string="1.0.0"><![CDATA[Please confirm that you want to delete the following form]]></phrase>
+    <phrase title="please_confirm_want_to_delete_response" version_id="11" version_string="1.0.0"><![CDATA[Please confirm that you want to delete the following response]]></phrase>
+    <phrase title="please_enter_Value_using_x_characters_or_more" version_id="11" version_string="1.0.0"><![CDATA[Please enter a value using {count} characters or more.]]></phrase>
+    <phrase title="private_form" version_id="0" version_string="1.0.0"><![CDATA[Private form]]></phrase>
+    <phrase title="provided_file_is_not_a_form_xml_file" version_id="11" version_string="1.0.0"><![CDATA[The provided file is not a form XML file.]]></phrase>
+    <phrase title="redirect_url" version_id="3" version_string="1.0.0 Beta 1"><![CDATA[Redirect URL]]></phrase>
+    <phrase title="redirect_url_explain" version_id="3" version_string="1.0.0 Beta 1"><![CDATA[Enter a url the user will be sent to after completion of the form.  Leave blank to have them redirected to the forum index or form list depending upon permissions.]]></phrase>
+    <phrase title="remove_xenforo_css" version_id="13" version_string="1.1.1"><![CDATA[Remove XenForo CSS]]></phrase>
+    <phrase title="requested_form_not_found" version_id="0" version_string="1.0.0"><![CDATA[The requested form could not be found.]]></phrase>
+    <phrase title="requested_response_not_found" version_id="11" version_string="1.0.0"><![CDATA[The requested response could not be found.]]></phrase>
+    <phrase title="responses" version_id="0" version_string="1.0.0"><![CDATA[Responses]]></phrase>
+    <phrase title="responses_per_user" version_id="0" version_string="1.0.0"><![CDATA[Responses Per User]]></phrase>
+    <phrase title="save_destination" version_id="0" version_string="1.0.0"><![CDATA[Save Destination]]></phrase>
+    <phrase title="save_form_destination" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Save Form Destination]]></phrase>
+    <phrase title="start_and_end_dates" version_id="0" version_string="1.0.0"><![CDATA[Start & End Dates]]></phrase>
+    <phrase title="start_and_end_dates_explain" version_id="0" version_string="1.0.0"><![CDATA[Set a start and end date for this particular form if you wish to capture entries between particular dates.]]></phrase>
+    <phrase title="submit" version_id="0" version_string="1.0.0"><![CDATA[Submit]]></phrase>
+    <phrase title="template_field" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Template Field]]></phrase>
+    <phrase title="template_fields" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[Template Fields]]></phrase>
+    <phrase title="there_no_forms_defined" version_id="0" version_string="1.0.0"><![CDATA[No forms have been created yet.]]></phrase>
+    <phrase title="there_no_responses" version_id="11" version_string="1.0.0"><![CDATA[There are no responses for this form yet.]]></phrase>
+    <phrase title="this_is_list_of_all_forms_registered_at_x" version_id="0" version_string="1.0.0"><![CDATA[The following is a list of forms available for you to fill out and submit if you have the necessary permissions.]]></phrase>
+    <phrase title="view_form" version_id="12" version_string="1.1.0"><![CDATA[View Form]]></phrase>
+    <phrase title="what_kind_of_destination_do_you_want_to_add" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[What kind of destination do you want to add?]]></phrase>
+    <phrase title="what_kind_of_field_do_you_want_to_add" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[What kind of field do you want to add?]]></phrase>
+    <phrase title="when_selecting_html_must_have_default_value" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[When selecting the HTML field type, you must enter your HTML as the default value.]]></phrase>
+    <phrase title="wysiwyg" version_id="11" version_string="1.0.0"><![CDATA[WYSIWYG]]></phrase>
+    <phrase title="your_responses" version_id="0" version_string="1.0.0"><![CDATA[Your Responses]]></phrase>
+    <phrase title="you_have_already_responded" version_id="0" version_string="1.0.0"><![CDATA[- You've Reached Maximum Responses!]]></phrase>
+  </phrases>
+  <route_prefixes>
+    <route_type type="admin">
+      <prefix original_prefix="destinations" class="LiquidPro_SimpleForms_Route_PrefixAdmin_Destinations" build_link="data_only"/>
+      <prefix original_prefix="fields" class="LiquidPro_SimpleForms_Route_PrefixAdmin_Fields" build_link="data_only"/>
+      <prefix original_prefix="form-destinations" class="LiquidPro_SimpleForms_Route_PrefixAdmin_FormDestinations" build_link="data_only"/>
+      <prefix original_prefix="form-permissions" class="LiquidPro_SimpleForms_Route_PrefixAdmin_FormPermissions" build_link="data_only"/>
+      <prefix original_prefix="forms" class="LiquidPro_SimpleForms_Route_PrefixAdmin_Forms" build_link="data_only"/>
+      <prefix original_prefix="responses" class="LiquidPro_SimpleForms_Route_PrefixAdmin_Responses" build_link="data_only"/>
+    </route_type>
+    <route_type type="public">
+      <prefix original_prefix="forms" class="LiquidPro_SimpleForms_Route_Prefix_Forms" build_link="data_only"/>
+    </route_type>
+  </route_prefixes>
+  <style_properties/>
+  <templates>
+    <template title="destination_option_email_message_template" version_id="0" version_string="1.0.0"><![CDATA[<xen:foreach loop="$options" value="$option">
+	{xen:raw $option.title}: <br/>
+</xen:foreach>]]></template>
+    <template title="field_edit" version_id="21901" version_string="2.1.9"><![CDATA[<xen:if is="{$field.active}">
+<xen:if hascontent="true">
+	<div class="lpsfPreText baseHtml messageText">
+		<xen:contentcheck>
+			{xen:raw $field.pre_text}
+		</xen:contentcheck>
+	</div>
+</xen:if>
+
+<dl class="ctrlUnit lpsf_{$field.field_name}{xen:if "{$field.required}", " lpsf_required"}">
+	<xen:if is="{$field.field_type} == 'html'">
+		<div class="form-html-block">{xen:raw $field.default_value}</div>
+	<xen:else />
+		<dt>
+			<xen:if is="{$field.hide_title} == 0">
+				<label for="ctrl_field_{$field.field_id}">{$field.title}:</label>
+				<xen:if is="{$field.required}"><dfn>{xen:phrase required}</dfn></xen:if>
+			</xen:if>
+		</dt>
+		<dd>
+			<xen:if is="{$field.field_type} == 'textbox'">
+				<input type="text" name="fields[{$field.field_id}]" value="{$field.default_value}" 
+					placeholder="{$field.placeholder}"
+					id="ctrl_field_{$field.field_id}"
+					data-validatorname="field[{$field.field_id}]"
+					class="textCtrl" maxlength="{xen:if $field.max_length, $field.max_length}" 
+				/>
+			<xen:elseif is="{$field.field_type} == 'textarea'" />
+				<textarea name="fields[{$field.field_id}]" 
+					placeholder="{$field.placeholder}"
+					id="ctrl_field_{$field.field_id}"
+					data-validatorname="field[{$field.field_id}]" 
+					class="textCtrl Elastic">{$field.default_value}</textarea>
+			<xen:elseif is="{$field.field_type} == 'radio'" />
+				<ul{xen:if "{xen:count $field.fieldChoices} > 1", ' class="checkboxColumns"'}>
+				<xen:if is="!{$field.required}">
+					<li><label><input type="radio" name="fields[{$field.field_id}]" value="" {xen:checked '{$field.field_value} == ""'} /> <span class="muted">{xen:phrase no_selection}</span></label></li>
+				</xen:if>
+				<xen:foreach loop="$field.fieldChoices" key="$choice" value="$text">
+					<li><label><input type="radio" name="fields[{$field.field_id}]" value="{$choice}" {xen:checked '{$field.default_value} == {$choice}'} /> {xen:raw $text}</label></li>
+				</xen:foreach>
+				</ul>
+			<xen:elseif is="{$field.field_type} == 'select'" />
+				<select name="fields[{$field.field_id}]" id="ctrl_field_{$field.field_id}" class="textCtrl">
+				<xen:if is="!{$field.required} OR !{$field.hasValue}">
+					<option value="">&nbsp;</option>
+				</xen:if>
+				<xen:foreach loop="$field.fieldChoices" key="$choice" value="$text">
+					<option value="{$choice}" {xen:selected '{$field.default_value} == {$choice}'}>{xen:raw $text}</option>
+				</xen:foreach>
+				</select>
+			<xen:elseif is="{$field.field_type} == 'checkbox'" />
+				<ul{xen:if "{xen:count $field.fieldChoices} > 1", ' class="checkboxColumns"'}>
+				<xen:foreach loop="$field.fieldChoices" key="$choice" value="$text">
+					<li><label><input type="checkbox" name="fields[{$field.field_id}][{$choice}]" value="{$choice}" {xen:checked 'isset({$field.default_value.{$choice}})'} /> {xen:raw $text}</label></li>
+				</xen:foreach>
+				</ul>
+			<xen:elseif is="{$field.field_type} == 'multiselect'" />
+				<select name="fields[{$field.field_id}][]" id="ctrl_field_{$field.field_id}" class="textCtrl" size="7" multiple="multiple">
+				<xen:if is="!{$field.required} OR !{$field.hasValue}">
+					<option value="">&nbsp;</option>
+				</xen:if>
+				<xen:foreach loop="$field.fieldChoices" key="$choice" value="$text">
+					<option value="{$choice}" {xen:selected 'isset({$field.default_value.{$choice}}'}>{$text}</option>
+				</xen:foreach>
+				</select>
+			<xen:elseif is="{$field.field_type} == 'wysiwyg'"/>
+				{xen:raw $field.editor}
+			<xen:elseif is="{$field.field_type} == 'date'"/>
+				<input type="date" name="fields[{$field.field_id}]" value="{$field.default_value}" 
+					data-validatorname="field[{$field.field_id}]"
+					id="ctrl_field_{$field.field_id}" 
+					class="textCtrl" 
+					size="10"
+				/>
+			<xen:elseif is="{$field.field_type} == 'rating'"/>
+				<div class="lpsf_rating">
+					<ul>
+					<xen:foreach loop="{$field.fieldChoices}" value="$choice">
+						<li><label><input type="radio" name="fields[{$field.field_id}]" value="{$choice}" {xen:checked '{$field.default_value} == {$choice}'} /> {xen:raw $choice}</label></li>				
+					</xen:foreach>
+					</ul>
+				</div>
+			<xen:elseif is="{$field.field_type} == 'datetime'"/>
+				<input type="date" name="fields[{$field.field_id}][date]" value="{$field.default_value.date}" 
+					data-validatorname="field[{$field.field_id}]"
+					id="ctrl_field_{$field.field_id}_date" 
+					class="textCtrl"
+					size="10"
+				/>				
+				<input type="text" name="fields[{$field.field_id}][time]" value="{$field.default_value.time}" 
+					data-validatorname="field[{$field.field_id}]"
+					id="ctrl_field_{$field.field_id}_time" 
+					class="textCtrl lpsfTimePicker"
+					size="10"
+				/>		
+			<xen:elseif is="{$field.field_type} == 'time'"/>
+				<input type="text" name="fields[{$field.field_id}]" value="{$field.default_value}" 
+					data-validatorname="field[{$field.field_id}]"
+					id="ctrl_field_{$field.field_id}" 
+					class="textCtrl lpsfTimePicker"
+					size="10"
+				/>							
+			</xen:if>
+	
+			<xen:if hascontent="true"><p class="explain"><xen:contentcheck>{xen:raw $field.description}</xen:contentcheck></p></xen:if>
+			<input type="hidden" name="fields_shown[]" value="{$field.field_id}" />
+		</dd>
+	</xen:if>
+</dl>
+<xen:if hascontent="true">
+	<div class="lpsfPostText baseHtml messageText">
+		<xen:contentcheck>
+			{xen:raw $field.post_text}
+		</xen:contentcheck>
+	</div>
+</xen:if>
+</xen:if>]]></template>
+    <template title="form_list" version_id="0" version_string="1.0.0"><![CDATA[<xen:title>{xen:phrase forms}{xen:helper pagenumber, $page}</xen:title>
+<xen:h1>{xen:phrase forms}</xen:h1>
+
+<xen:description>{xen:phrase this_is_list_of_all_forms_registered_at_x, 'board_title={$xenOptions.boardTitle}'}</xen:description>
+
+<xen:container var="$head.canonical">
+	<link rel="canonical" href="{xen:link 'canonical:forms', '', 'page={$page}'}" /></xen:container>
+
+<xen:require css="form_list.css" />
+<xen:require css="form_list_item.css" />
+	
+<xen:if is="{$formNotFound}">
+	<div class="importantMessage">{xen:phrase specified_form_cannot_be_found_enter_entire_name}</div>
+</xen:if>
+
+<xen:if is="{$visibleForms} == 0">
+	{xen:phrase no_forms_available}
+<xen:else/>
+<div class="pageNavLinkGroup">
+	<xen:pagenav link="forms" page="{$page}" perpage="{$formsPerPage}" total="{$totalForms}" />
+</div>	
+
+<ol class="section formList">
+	<xen:foreach loop="$forms" value="$form">
+		<xen:include template="form_list_item">
+			<xen:set var="$noOverlay">1</xen:set>
+		</xen:include>
+	</xen:foreach>
+</ol>
+
+<div class="pageNavLinkGroup">
+	<xen:pagenav link="forms" page="{$page}" perpage="{$formsPerPage}" total="{$totalForms}" />
+</div>
+</xen:if>
+
+<xen:sidebar>
+	<xen:if is="{$visibleForms} > 0">
+		<div class="section">
+			<form action="{xen:link forms/respond}" method="post" class="secondaryContent findForm">
+				<h3>{xen:phrase find_form}</h3>
+				
+				<input type="search" name="form_id" placeholder="{xen:phrase title}..." results="0" class="textCtrl AutoCompleteGeneric AcSingle" data-acUrl="{xen:link 'forms/search-title'}" data-acDisplay="title" data-autoSubmit="true" />
+				<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+			</form>
+		</div>
+	</xen:if>
+</xen:sidebar>]]></template>
+    <template title="form_list.css" version_id="0" version_string="1.0.0"><![CDATA[.search_results_forms_only .formList
+{
+	border-top: 1px solid {xen:property primaryLighterStill};
+}
+	
+.findForm .textCtrl
+{
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	*width: 95%;
+}]]></template>
+    <template title="form_list_item" version_id="21901" version_string="2.1.9"><![CDATA[<xen:require css="form_list_item.css" />
+<xen:require js="js/liquidpro/simpleforms/simpleforms.js" />
+<li class="primaryContent formListItem{xen:if $extended, ' extended'}"{xen:if $id, ' id="{$id}"'}>
+<xen:hook name="form_list_item">
+	<xen:if is="{$extraTemplate}"><div class="extra">{xen:raw $extraTemplate}</div></xen:if>
+
+	<div class="form">
+		<!-- slot: before_title -->
+
+		<h3 class="title">
+			<xen:if is="{$form.max_responses} == 0 OR {$form.num_responses} < {$form.max_responses}">
+				<xen:if is="{$form.max_responses_per_user} == 0 OR {$form.num_user_responses} < {$form.max_responses_per_user}">
+					<a href="{xen:link forms/respond, $form}">{xen:raw $form.title}</a>
+				<xen:else/>
+					{xen:raw $form.title} {xen:phrase you_have_already_responded}
+				</xen:if>
+			<xen:else/>
+				{xen:raw $form.title} {xen:phrase maximum_responses_met}
+			</xen:if>
+		</h3>
+
+		<!-- slot: after_title -->
+			
+		<div class="formInfo">
+			<!-- slot: before_description -->
+
+			<div class="formBlurb dimmed baseHtml">{xen:raw $form.description}</div>
+
+			<!-- slot: after_description -->
+
+			<dl class="formStats pairsInline">
+				<!-- slot: before_responses_for_x -->
+
+				<dt title="{xen:phrase responses_for_x, 'name={$form.title}'}">{xen:phrase responses}:</dt> <dd>{xen:number $form.num_responses}</dd>
+
+				<!-- slot: after_responses_for_x -->
+
+				<xen:if is="{$form.end_date.timestamp}">
+					<dt title="{xen:phrase end_date_for_x, 'name={$form.title}'}">{xen:phrase end_date}:</dt> <dd><xen:datetime time="{$form.end_date.timestamp}"/></dd>
+				</xen:if>
+
+				<!-- slot: after_end_date -->
+
+				<xen:if is="{$form.max_responses_per_user} > 0">
+					<dt title="{xen:phrase responses_per_user_for_x, 'name={$form.title}'}">{xen:phrase responses_per_user}:</dt> <dd>{xen:number $form.max_responses_per_user}</dd>
+					<dt title="{xen:phrase your_responses_for_x, 'name={$form.title}'}">{xen:phrase your_responses}:</dt> <dd>{xen:number $form.num_user_responses}</dd>
+				</xen:if>
+
+				<!-- slot: after_max_responses -->
+			</dl>
+		</div>
+
+		<!-- slot: after_form_info -->
+		
+		<xen:if hascontent="true">
+			<div class="contentInfo"><xen:contentcheck>{xen:raw $contentTemplate}</xen:contentcheck></div>
+		</xen:if>
+		
+	</div>
+</xen:hook>
+</li>]]></template>
+    <template title="form_list_item.css" version_id="0" version_string="1.0.0"><![CDATA[.formListItem
+{
+	@property "formListItem";
+	overflow: hidden;
+	zoom: 1;
+	padding-left: 0 !important;
+	@property "/formListItem";
+}
+
+	/* ----------------------- */
+	
+	.formListItem .extra
+	{
+		@property "formListItemExtra";
+		font-size: 11px;
+		float: right;
+		@property "/formListItemExtra";
+	}
+
+		.formListItem .extra .DateTime
+		{
+			display: block;
+		}
+	
+	.formListItem .form
+	{
+		@property "formListItemForm";
+		@property "/formListItemForm";
+	}
+	
+	/* ----------------------- */
+		
+		.formListItem h3.title
+		{
+			@property "formListItemTitle";
+			font-weight: bold;
+			font-size: 13pt;
+			margin-bottom: 3px;
+			@property "/formListItemTitle";
+		}
+	
+	/* ----------------------- */
+		
+		.formListItem .formInfo
+		{
+			@property "formListItemFormInfo";
+			font-size: 11px;
+			margin-bottom: 3px;
+			@property "/formListItemFormInfo";
+		}
+		
+			.formListItem .formBlurb
+			{
+			}
+		
+				.formListItem .formBlurb .formTitle
+				{
+					@property "formListItemFormTitle";
+					font-weight: bold;
+					@property "/formListItemFormTitle";
+				}
+				
+	
+	/* ----------------------- */
+		
+		.formListItem .form .contentInfo
+		{
+			@property "formListItemContent";
+			margin-top: 5px;
+			@property "/formListItemContent";
+		}
+	
+	/* ----------------------- */
+	]]></template>
+    <template title="form_respond" version_id="21901" version_string="2.1.9"><![CDATA[<xen:title>{xen:raw $form.title}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:link forms/respond, $form}">{$form.title}</xen:breadcrumb>
+</xen:navigation>
+<xen:container var="$formCss">{xen:raw $form.css}</xen:container>
+
+<xen:require css="form_respond.css" />
+<xen:require js="js/liquidpro/simpleforms/jquery.timepicker.js"/>
+<xen:require js="js/liquidpro/simpleforms/public.js"/>
+<xen:require css="lpsf_jquery_timepicker.css"/>
+
+<xen:container var="$head.description">
+	<meta name="description" content="{xen:helper snippet, $form.description, 155}" /></xen:container>
+
+<xen:container var="$formId">{$form.form_id}</xen:container>
+
+<div class="baseHtml"><p id="pageDescription" class="muted">{xen:raw $form.description}</p></div>
+
+<xen:if hascontent="true">
+	<div id="lpsfFormHeader">
+		<xen:contentcheck>
+			{xen:raw $form.header_html}
+		</xen:contentcheck>
+	</div>
+</xen:if>
+
+<form method="post" class="xenForm AutoValidator lpsfForm"
+	action="{xen:link 'forms/save'}"
+	data-fieldValidatorUrl="{xen:link 'forms/validate-field'}" data-redirect="on">
+	
+	<xen:foreach loop="$fields" value="$field">
+		<xen:if is="{$field}">
+			<xen:include template="field_edit" />
+		</xen:if>
+	</xen:foreach>
+
+	<xen:if is="{$attachmentParams}">
+		<dl class="ctrlUnit AttachedFilesUnit">
+			<dt><label for="ctrl_uploader">{xen:phrase attached_files}:</label></dt>
+			<dd><xen:include template="attachment_editor" /></dd>
+		</dl>
+	</xen:if>
+
+	<xen:include template="helper_captcha_unit" />
+
+	<input type="hidden" name="form_id" value="{$form.form_id}"/>
+
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd>
+			<input type="submit" value="{xen:phrase submit}" class="button primary" />
+			<xen:if is="{$attachmentManager}"><xen:include template="attachment_upload_button" /></xen:if>
+		</dd>
+	</dl>
+</form>
+
+<xen:if hascontent="true">
+	<div id="lpsfFormFooter">
+		<xen:contentcheck>
+			{xen:raw $form.footer_html}
+		</xen:contentcheck>
+	</div>
+</xen:if>]]></template>
+    <template title="form_respond.css" version_id="21901" version_string="2.1.9"><![CDATA[.lpsf_rating ul{width:100%;overflow:hidden;padding-left:5px;}
+.lpsf_rating li{float:left;padding-right:5px;}
+#lpsfFormHeader,#lpsfFormFooter{zoom:1;padding:10px 0;}]]></template>
+    <template title="form_respond_header" version_id="21501" version_string="2.1.5"><![CDATA[<xen:if is="{$formCss}">
+<style type="text/css">
+{xen:raw $formCss}
+</style>
+</xen:if>]]></template>
+    <template title="lpsf_jquery_timepicker.css" version_id="21901" version_string="2.1.9"><![CDATA[.ui-timepicker-wrapper {
+	overflow-y: auto;
+	height: 150px;
+	width: 6.5em;
+	background: #fff;
+	border: 1px solid #ddd;
+	-webkit-box-shadow:0 5px 10px rgba(0,0,0,0.2);
+	-moz-box-shadow:0 5px 10px rgba(0,0,0,0.2);
+	box-shadow:0 5px 10px rgba(0,0,0,0.2);
+	outline: none;
+	z-index: 10001;
+	margin: 0;
+}
+
+.ui-timepicker-wrapper.ui-timepicker-with-duration {
+	width: 13em;
+}
+
+.ui-timepicker-wrapper.ui-timepicker-with-duration.ui-timepicker-step-30,
+.ui-timepicker-wrapper.ui-timepicker-with-duration.ui-timepicker-step-60 {
+	width: 11em;
+}
+
+.ui-timepicker-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.ui-timepicker-duration {
+	margin-left: 5px; color: #888;
+}
+
+.ui-timepicker-list:hover .ui-timepicker-duration {
+	color: #888;
+}
+
+.ui-timepicker-list li {
+	padding: 3px 0 3px 5px;
+	cursor: pointer;
+	white-space: nowrap;
+	color: #000;
+	list-style: none;
+	margin: 0;
+}
+
+.ui-timepicker-list:hover .ui-timepicker-selected {
+	background: #fff; color: #000;
+}
+
+li.ui-timepicker-selected,
+.ui-timepicker-list li:hover,
+.ui-timepicker-list .ui-timepicker-selected:hover {
+	background: #1980EC; color: #fff;
+}
+
+li.ui-timepicker-selected .ui-timepicker-duration,
+.ui-timepicker-list li:hover .ui-timepicker-duration {
+	color: #ccc;
+}
+
+.ui-timepicker-list li.ui-timepicker-disabled,
+.ui-timepicker-list li.ui-timepicker-disabled:hover,
+.ui-timepicker-list li.ui-timepicker-selected.ui-timepicker-disabled {
+	color: #888;
+	cursor: default;
+}
+
+.ui-timepicker-list li.ui-timepicker-disabled:hover,
+.ui-timepicker-list li.ui-timepicker-selected.ui-timepicker-disabled {
+	background: #f2f2f2;
+}]]></template>
+    <template title="lpsf_post_reply" version_id="20300" version_string="2.0.3"><![CDATA[<xen:topctrl><a href="{xen:link forms/respond, $form}" class="callToAction"><span>{xen:if "{$forum.lpsf_button_text} != ''", '{$forum.lpsf_button_text}', '{xen:phrase post_new_thread}'}</span></a></xen:topctrl>]]></template>
+  </templates>
+  <public_template_modifications>
+    <modification template="forum_view" modification_key="lpsfCreateThreadLink" description="Replace Create Thread Link" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[{xen:link 'forums/create-thread', $forum}]]></find>
+      <replace><![CDATA[{xen:if "{$form}", "{xen:link 'forms/respond', $form}", "$0"}]]></replace>
+    </modification>
+    <modification template="PAGE_CONTAINER" modification_key="lpsfCustomCss" description="Add custom CSS for a form" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<!--XenForo_Require:CSS-->]]></find>
+      <replace><![CDATA[$0
+
+<xen:include template="form_respond_header"/>]]></replace>
+    </modification>
+    <modification template="forum_view" modification_key="lpsfPostNewThreadText" description="Replace Post New Thread Text" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[{xen:phrase post_new_thread}]]></find>
+      <replace><![CDATA[{xen:if "{$forum.lpsf_button_text} != '' AND {$form}", '{$forum.lpsf_button_text}', '$0'}]]></replace>
+    </modification>
+  </public_template_modifications>
+  <bb_code_media_sites/>
+  <bb_codes/>
+</addon>
