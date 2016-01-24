@@ -1,6 +1,6 @@
 <?php
 
-class LiquidPro_SimpleForms_Install_21902 extends LiquidPro_SimpleForms_Install_Abstract
+class LiquidPro_SimpleForms_Install_21905 extends LiquidPro_SimpleForms_Install_Abstract
 {
     public function install(&$db)
     {
