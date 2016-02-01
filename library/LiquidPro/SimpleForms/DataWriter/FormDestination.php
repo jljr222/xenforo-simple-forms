@@ -89,11 +89,17 @@ class LiquidPro_SimpleForms_DataWriter_FormDestination extends XenForo_DataWrite
 	{
 		$this->updateDestinationOptions();
 	
-		$this->getModelFromCache('XenForo_Model_Permission')->rebuildPermissionCache();
-	
 		parent::_postSave();
 	}	
-	
+
+	protected function _postSaveAfterTransaction()
+	{
+		if ($this->isInsert())
+		{
+			$this->getModelFromCache('XenForo_Model_Permission')->rebuildPermissionCache();
+		}
+	}
+
 	public function setDestinationOptions(array $destinationOptionValues, array $optionsShown = null)
 	{
 		$destinationModel = $this->_getDestinationModel();
@@ -210,6 +216,8 @@ class LiquidPro_SimpleForms_DataWriter_FormDestination extends XenForo_DataWrite
 	
 	public function setFormDestinationXml($formDestination, $formId)
 	{
+		$this->setImportMode(true);
+
 		$formDestinationData = array(
 			'destination_id' => (int)$formDestination['destination_id'],
 			'form_id' => $formId,
