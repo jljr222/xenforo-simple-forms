@@ -1291,9 +1291,8 @@ $(function() {
 
 				<!-- slot: after_hide_from_list -->
 				
-				<xen:checkboxunit label="{xen:phrase lpsf_require_attachment}:" hint="{xen:phrase lpsf_require_attachment_hint}" name="require_attachment">
-					<xen:option label="" value="1" selected="{$form.require_attachment}"/>
-				</xen:checkboxunit>			
+				<xen:spinboxunit name="require_attachment" label="{xen:phrase lpsf_require_attachment}:" explain="{xen:phrase lpsf_require_attachment_hint}" value="{$form.require_attachment}" min="0" max="20">
+				</xen:spinboxunit>
 				<!-- slot: require_attachment -->	
 
 				<xen:spinboxunit name="max_responses" label="{xen:phrase max_responses_allowed}:" explain="{xen:phrase max_responses_allowed_explain}" value="{$form.max_responses}" min="0">
@@ -2764,6 +2763,7 @@ Might want to handle that suspended license before someone gets hurt...]]></phra
     <phrase title="lpsf_in_selected_timezone" version_id="20300" version_string="2.0.3"><![CDATA[In the selected timezone]]></phrase>
     <phrase title="lpsf_in_visitor_timezone" version_id="20300" version_string="2.0.3"><![CDATA[In the visitor's timezone]]></phrase>
     <phrase title="lpsf_liquidpro_simpleforms_criteria" version_id="200" version_string="2.0.0"><![CDATA[LiquidPro Simple Forms Criteria]]></phrase>
+    <phrase title="lpsf_minimal_x_attachment_required_uploaded_y_z_more" version_id="21902" version_string="2.1.9"><![CDATA[Minimal {min} attachments are required for this form. {uploaded} attachments have been uploaded. Please upload {more} attachments more.]]></phrase>
     <phrase title="lpsf_move_down" version_id="200" version_string="2.0.0"><![CDATA[Move Down]]></phrase>
     <phrase title="lpsf_move_up" version_id="200" version_string="2.0.0"><![CDATA[Move Up]]></phrase>
     <phrase title="lpsf_name" version_id="21901" version_string="2.1.9"><![CDATA[Name]]></phrase>

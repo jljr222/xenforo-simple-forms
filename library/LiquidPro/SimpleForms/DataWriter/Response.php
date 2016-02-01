@@ -92,10 +92,15 @@ class LiquidPro_SimpleForms_DataWriter_Response extends XenForo_DataWriter
 			
 			$attachmentModel = $this->_getAttachmentModel();
 			$attachments = $attachmentModel->getAttachmentsByTempHash($this->getExtraData(LiquidPro_SimpleForms_DataWriter_Response::DATA_ATTACHMENT_HASH));
-			
-			if ($form['require_attachment'] && $attachments === array())
+
+			if (count($attachments) < $form['require_attachment'])
 			{
-				$this->error(new XenForo_Phrase('lpsf_attachment_required'));
+				$this->error(new XenForo_Phrase('lpsf_minimal_x_attachment_required_uploaded_y_z_more',
+					array(
+						'uploaded' => count($attachments),
+						'min' => $form['require_attachment'],
+						'more' => $form['require_attachment'] - count($attachments),
+					)));
 			}
 		}
 		
