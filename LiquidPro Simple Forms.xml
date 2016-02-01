@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="LiquidPro_SimpleForms" title="LiquidPro Simple Forms" version_string="2.1.9d" version_id="21905" url="https://xenforo.com/community/threads/simple-forms-paid-deleted.27945" install_callback_class="LiquidPro_SimpleForms_Version" install_callback_method="Install" uninstall_callback_class="LiquidPro_SimpleForms_Version" uninstall_callback_method="Uninstall">
+<addon addon_id="LiquidPro_SimpleForms" title="LiquidPro Simple Forms" version_string="2.1.9e" version_id="21906" url="https://xenforo.com/community/threads/simple-forms-paid-deleted.27945" install_callback_class="LiquidPro_SimpleForms_Version" install_callback_method="Install" uninstall_callback_class="LiquidPro_SimpleForms_Version" uninstall_callback_method="Uninstall">
   <admin_navigation>
     <navigation navigation_id="createForm" parent_navigation_id="simpleForms" display_order="60" link="forms/add" admin_permission_id="form" debug_only="0" hide_no_children="0"/>
     <navigation navigation_id="displaySimpleForms" parent_navigation_id="simpleForms" display_order="1" link="forms" admin_permission_id="form" debug_only="0" hide_no_children="0"/>
