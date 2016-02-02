@@ -329,10 +329,10 @@ class LiquidPro_SimpleForms_DataWriter_Field extends XenForo_DataWriter
 	
 		$this->setFieldChoices(unserialize((string)$field['field_choices']));
 
+		$this->save();
+
 		// imported forms are never global, so just update the phrase(s)
 		$this->updatePhrases();
-
-		$this->save();		
 	}
 	
 	/**
