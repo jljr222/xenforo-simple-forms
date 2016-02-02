@@ -63,18 +63,29 @@ class LiquidPro_SimpleForms_ControllerPublic_Form extends XenForo_ControllerPubl
 		$form = $this->_getFormOrError($this->_input->filterSingle('form_id', XenForo_Input::UINT));
 		$fieldModel = $this->_getFieldModel();
 		$destinationOptionModel = $this->_getDestinationOptionModel();
+		$attachmentModel = $this->getModelFromCache('XenForo_Model_Attachment');
 		
 		$attachmentParams = array();
-		
+		$constraints = $attachmentModel->getAttachmentConstraints();
 		// check to see if attachments are enabled
-		$attachmentsEnabled = $destinationOptionModel->getAttachmentsEnabled($form['form_id']);
-		if ($attachmentsEnabled)
+		$attachmentTypes = $destinationOptionModel->getAttachmentsDestinationHandlers($form['form_id']);
+		if ($attachmentTypes)
 		{
 			$attachmentParams = array(
 				'hash' => md5(uniqid('', true)),
 				'content_type' => 'form',
 				'content_data' => array('form_id' => $form['form_id'])
-			);			
+			);
+
+			$attachmentHandler = $attachmentModel->getAttachmentHandler($attachmentParams['content_type']);
+
+			if (!$attachmentHandler || !$attachmentHandler->canUploadAndManageAttachments($attachmentParams['content_data']))
+			{
+				XenForo_Error::debug('form_destination_id '.$form_destination_id .' does not accept attachments for the user '. XenForo_Visitor::getUserId());
+				throw new XenForo_Exception(new XenForo_Phrase('attachment_cannot_be_shown_at_this_time'), true);
+			}
+
+			$constraints = $attachmentHandler->getAttachmentConstraints();
 		}
 		
 		$params = array();
@@ -105,9 +116,9 @@ class LiquidPro_SimpleForms_ControllerPublic_Form extends XenForo_ControllerPubl
 		$viewParams = array(
 			'form' => $form,
 			'fields' => $fields,
-			'attachmentManager' => $attachmentsEnabled,
+			'attachmentManager' => !empty($attachmentTypes),
 			'attachmentParams' => $attachmentParams,
-			'attachmentConstraints' => $this->getModelFromCache('XenForo_Model_Attachment')->getAttachmentConstraints(),
+			'attachmentConstraints' => $constraints,
 			'captcha' => XenForo_Captcha_Abstract::createDefault()
 		);
 		

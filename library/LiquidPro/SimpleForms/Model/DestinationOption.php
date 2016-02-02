@@ -60,25 +60,34 @@ class LiquidPro_SimpleForms_Model_DestinationOption extends XenForo_Model
 		'option_id', $formDestinationId);
 	}
 	
-	public function getAttachmentsEnabled($formId)
+	public function getAttachmentsDestinationHandlers($formId)
 	{
-	    $result = $this->_getDb()->fetchOne('
-            SELECT option_value
+	    $destinations = $this->_getDb()->fetchAll('
+            SELECT option_value, lpsf_form_destination.form_destination_id, lpsf_destination.handler_class
             FROM lpsf_form_destination
             JOIN lpsf_form_destination_option
               ON lpsf_form_destination_option.form_destination_id = lpsf_form_destination.form_destination_id
+			JOIN lpsf_destination on lpsf_destination.destination_id = lpsf_form_destination.destination_id
             WHERE option_id LIKE \'%_enable_attachments\' 
-              AND form_id = ?	            
+              AND form_id = ?
 	    ', $formId);
-	    
-	    if ($result && unserialize($result) !== array())
-	    {
-	        return true;
-	    }
-	    else
-	    {
-	        return false;
-	    }
+		if (empty($destinations))
+		{
+			return false;
+		}
+
+		$contentTypes = array();
+
+		foreach($destinations as $destination)
+		{
+			$result = @unserialize($destination['option_value']);
+			if ($result !== array() && !isset($contentTypes[$destination['form_destination_id']]))
+			{
+				$contentTypes[$destination['form_destination_id']] = $destination;
+			}
+		}
+
+	    return $contentTypes;
 	}
 
 	/**

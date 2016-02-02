@@ -287,7 +287,18 @@ class LiquidPro_SimpleForms_Destination_Thread extends LiquidPro_SimpleForms_Des
 		
 		return $errors;
 	}
-	
+
+	public static function getAttachmentConstraints($form_destination_id, $destinationOptions)
+	{
+		if (empty($destinationOptions['thread_forum_node_id']['option_value']))
+		{
+			return array();
+		}
+
+		$contentData = array('node_id' => $destinationOptions['thread_forum_node_id']['option_value']);
+		return self::_getAttachmentConstraints('post', $contentData);
+	}
+
 	/**
 	 * @return XenForo_Model_Forum
 	 */

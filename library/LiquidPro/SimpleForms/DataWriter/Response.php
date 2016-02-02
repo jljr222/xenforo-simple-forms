@@ -146,7 +146,7 @@ class LiquidPro_SimpleForms_DataWriter_Response extends XenForo_DataWriter
 					$formDestination = new $destination['handler_class']($form['form_id'], $this->_updateFields, $destinationOptions, null, $this->get('response_id'));
 
 					// handle attachments
-					if ($destinationOptionModel->getAttachmentsEnabled($form['form_id']) && $attachments)
+					if ($destinationOptionModel->getAttachmentsDestinationHandlers($form['form_id']) && $attachments)
 					{
 						// create new temporary hash
 						$newAttachmentHash = md5(uniqid('', true));

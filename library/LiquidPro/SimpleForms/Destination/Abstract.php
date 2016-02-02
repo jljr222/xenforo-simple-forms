@@ -224,4 +224,23 @@ abstract class LiquidPro_SimpleForms_Destination_Abstract
 	    $newString = '[ATTACH]' . $this->_attachmentId . '[/ATTACH]';
 	    $field = str_replace($oldString, $newString, $field);
 	}
+
+	static $attachmentModel = null;
+	public static function _getAttachmentConstraints($contentType, $contentData)
+	{
+		if (self::$attachmentModel === null)
+		{
+			self::$attachmentModel = XenForo_Model::create('XenForo_Model_Attachment');
+		}
+
+		$attachmentHandler = self::$attachmentModel->getAttachmentHandler($contentType);
+
+		if (!$attachmentHandler || !$attachmentHandler->canUploadAndManageAttachments($contentData))
+		{
+			XenForo_Error::debug('form_destination_id '.$form_destination_id .' does not accept attachments for the user '. XenForo_Visitor::getUserId());
+			throw new XenForo_Exception(new XenForo_Phrase('attachment_cannot_be_shown_at_this_time'), true);
+		}
+
+		return $attachmentHandler->getAttachmentConstraints();
+	}
 }
