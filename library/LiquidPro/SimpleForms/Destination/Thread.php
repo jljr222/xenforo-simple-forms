@@ -296,7 +296,7 @@ class LiquidPro_SimpleForms_Destination_Thread extends LiquidPro_SimpleForms_Des
 		}
 
 		$contentData = array('node_id' => $destinationOptions['thread_forum_node_id']['option_value']);
-		return self::_getAttachmentConstraints('post', $contentData);
+		return self::_getAttachmentConstraints($form_destination_id, 'post', $contentData);
 	}
 
 	/**

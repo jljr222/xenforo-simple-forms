@@ -157,7 +157,7 @@ class LiquidPro_SimpleForms_Destination_Conversation extends LiquidPro_SimpleFor
 	public static function getAttachmentConstraints($form_destination_id, $destinationOptions)
 	{
 		$contentData = array();
-		return self::_getAttachmentConstraints('conversation_message', $contentData);
+		return self::_getAttachmentConstraints($form_destination_id, 'conversation_message', $contentData);
 	}
 	
 	/**

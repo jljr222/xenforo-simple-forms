@@ -226,7 +226,7 @@ abstract class LiquidPro_SimpleForms_Destination_Abstract
 	}
 
 	static $attachmentModel = null;
-	public static function _getAttachmentConstraints($contentType, $contentData)
+	public static function _getAttachmentConstraints($form_destination_id, $contentType, $contentData)
 	{
 		if (self::$attachmentModel === null)
 		{
