@@ -20,5 +20,6 @@ class LiquidPro_SimpleForms_ViewAdmin_Form_AddTemplateField extends XenForo_View
 		$this->setParams(array(
 			'preparedTemplates' => $preparedTemplates
 		));
+		return;
 	}
 }
