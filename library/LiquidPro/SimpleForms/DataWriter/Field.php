@@ -290,6 +290,8 @@ class LiquidPro_SimpleForms_DataWriter_Field extends XenForo_DataWriter
 	
 	public function setFieldXml($field, $formId)
 	{
+		$this->setImportMode(true);
+
 		$fieldData = array(
 			'form_id' => $formId,
 			'type' => 'user',
@@ -326,8 +328,11 @@ class LiquidPro_SimpleForms_DataWriter_Field extends XenForo_DataWriter
 		);
 	
 		$this->setFieldChoices(unserialize((string)$field['field_choices']));
-			
-		$this->save();		
+
+		$this->save();
+
+		// imported forms are never global, so just update the phrase(s)
+		$this->updatePhrases();
 	}
 	
 	/**

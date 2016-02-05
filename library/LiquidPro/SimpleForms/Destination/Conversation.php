@@ -153,6 +153,12 @@ class LiquidPro_SimpleForms_Destination_Conversation extends LiquidPro_SimpleFor
 		
 		return $errors;
 	}
+
+	public static function getAttachmentConstraints($form_destination_id, $destinationOptions)
+	{
+		$contentData = array();
+		return self::_getAttachmentConstraints($form_destination_id, 'conversation_message', $contentData);
+	}
 	
 	/**
 	 * @return XenForo_Model_Conversation

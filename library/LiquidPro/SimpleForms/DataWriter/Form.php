@@ -78,19 +78,28 @@ class LiquidPro_SimpleForms_DataWriter_Form extends XenForo_DataWriter
 	
 	protected function _postSave()
 	{
-		$this->getModelFromCache('XenForo_Model_Permission')->rebuildPermissionCache();
-		
-		// insert a dummy page
-		$pageDw = XenForo_DataWriter::create('LiquidPro_SimpleForms_DataWriter_Page');
-		$pageDw->bulkSet(array(
-		    'form_id' => $this->get('form_id'),
-		    'page_number' => 1,
-		    'title' => '',
-		    'description' => ''
-		));
-		$pageDw->save();
-		
+		if ($this->isInsert())
+		{
+			// insert a dummy page
+			$pageDw = XenForo_DataWriter::create('LiquidPro_SimpleForms_DataWriter_Page');
+			$pageDw->bulkSet(array(
+				'form_id' => $this->get('form_id'),
+				'page_number' => 1,
+				'title' => '',
+				'description' => ''
+			));
+			$pageDw->save();
+		}
+
 		parent::_postSave();
+	}
+
+	protected function _postSaveAfterTransaction()
+	{
+		if ($this->isInsert())
+		{
+			$this->getModelFromCache('XenForo_Model_Permission')->rebuildPermissionCache();
+		}
 	}
 	
 	/**

@@ -20,22 +20,6 @@ class LiquidPro_SimpleForms_Install_20 extends LiquidPro_SimpleForms_Install_Abs
 			$db->query("ALTER TABLE `" . $foreignKey['TABLE_NAME'] . "` DROP FOREIGN KEY `" . $foreignKey['CONSTRAINT_NAME'] . "`");
 		}
 		
-		// get a list of tables that are InnoDB
-		$tables = $db->fetchAll('
-			SELECT
-				*
-			FROM `INFORMATION_SCHEMA`.`TABLES`
-			WHERE `TABLE_SCHEMA` = DATABASE()
-				AND `TABLE_NAME` LIKE \'lpsf_%\'	
-				AND `ENGINE` = \'InnoDB\'
-		');
-		
-		// convert InnoDB tables to MyISAM
-		foreach ($tables as $table)
-		{
-			$db->query("ALTER TABLE `" . $table['TABLE_NAME'] . "` ENGINE = 'MyISAM'");
-		}
-		
 		$table = $this->describeTable('lpsf_field');
 		
 		// check to see if placeholder exists

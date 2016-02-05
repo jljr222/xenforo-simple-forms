@@ -500,8 +500,8 @@ class LiquidPro_SimpleForms_Model_Form extends XenForo_Model
 			'redirect_method' => (string)$xml['redirect_method'],
 			'redirect_url' => (string)$xml['redirect_url'],
 			'redirect_destination' => (string)$xml['redirect_destination'],
-			'start_date' => (isset($xml['start_date']) ? unserialize((string)$xml['start_date']) : array()),
-			'end_date' => (isset($xml['end_date']) ? unserialize((string)$xml['end_date']) : array()),
+			'start_date' => (isset($xml['start_date']) ? (string)$xml['start_date'] : serialize(array())),
+			'end_date' => (isset($xml['end_date']) ? (string)$xml['end_date'] : serialize(array())),
 			'css' => (string)$xml['css'],
 		    'header_html' => (string)$xml['header_html'],
 		    'footer_html' => (string)$xml['footer_html']
@@ -517,12 +517,22 @@ class LiquidPro_SimpleForms_Model_Form extends XenForo_Model
 		XenForo_Db::beginTransaction($db);
 
 		$formDw = XenForo_DataWriter::create('LiquidPro_SimpleForms_DataWriter_Form');
+		$formDw->setImportMode(true);
 		$formDw->bulkSet($formData);
 		$formDw->save();
-		
 		// get the form id
 		$formId = $formDw->get('form_id');
 		
+		$pageDw = XenForo_DataWriter::create('LiquidPro_SimpleForms_DataWriter_Page');
+		$pageDw->setImportMode(true);
+		$pageDw->bulkSet(array(
+			'form_id' => $formId,
+			'page_number' => 1,
+			'title' => '',
+			'description' => ''
+		));
+		$pageDw->save();
+
 		foreach ($xml->children() as $child)
 		{
 			switch ($child->getName())
@@ -558,12 +568,17 @@ class LiquidPro_SimpleForms_Model_Form extends XenForo_Model
 		if (isset($formDestinationId))
 		{
 		    $formDw = XenForo_DataWriter::create('LiquidPro_SimpleForms_DataWriter_Form');
-		    $formDw->setExistingData($formId);
+		    $formDw->setImportMode(true);
+			$formDw->setExistingData($formId);
 		    $formDw->set('redirect_destination', $formDestinationId);
 		    $formDw->save();
 		}
 		
 		XenForo_Db::commit($db);
+
+		$this->_getFieldModel()->rebuildFieldCache();
+		$this->getModelFromCache('XenForo_Model_Language')->rebuildLanguageCaches();
+		$this->getModelFromCache('XenForo_Model_Permission')->rebuildPermissionCache();
 
 		return $formId;
 	}	

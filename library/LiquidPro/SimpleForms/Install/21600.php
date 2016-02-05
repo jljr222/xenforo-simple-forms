@@ -13,7 +13,7 @@ class LiquidPro_SimpleForms_Install_21600 extends LiquidPro_SimpleForms_Install_
               `title` varchar(50) NOT NULL,
               `description` mediumtext,
 			  PRIMARY KEY (`page_id`)
-			) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+			) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 		");
         
         // populate each form with a single page
