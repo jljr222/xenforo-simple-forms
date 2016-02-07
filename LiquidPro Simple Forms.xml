@@ -2734,18 +2734,6 @@ custom=Custom Display Order</edit_format_params>
     <phrase title="import_form" version_id="11" version_string="1.0.0"><![CDATA[Import Form]]></phrase>
     <phrase title="import_from_file_on_server" version_id="11" version_string="1.0.0"><![CDATA[Import from file on server]]></phrase>
     <phrase title="import_from_uploaded_file" version_id="20300" version_string="2.0.3"><![CDATA[Import from uploaded file]]></phrase>
-    <phrase title="license_key_invalid_x" version_id="13" version_string="1.2.0 Beta 1"><![CDATA[The license key you entered is invalid for the following reason:  {message}. If you are having trouble with your license, please contact <a href="https://liquidpro.net/clients/clientarea.php" target="_blank">LiquidPro Support</a>.]]></phrase>
-    <phrase title="liquidpro_simpleforms_license_expired" version_id="0" version_string="1.0.0"><![CDATA[Gee willikers Batman, your license has expired!  Call the bat-mobile.]]></phrase>
-    <phrase title="liquidpro_simpleforms_license_invalid" version_id="0" version_string="1.0.0"><![CDATA[Do what you want, âcause a pirate is free,<br />
-YOU ARE A PIRATE!<br />
-Yar har, fiddle di dee,<br />
-Being a pirate is alright to be,<br />
-Do what you want âcause a pirate is free,<br />
-<strong>You are a pirate!</strong><br /><br />
-Also, your license is invalid :).]]></phrase>
-    <phrase title="liquidpro_simpleforms_license_suspended" version_id="0" version_string="1.0.0"><![CDATA[Do you like being a bum?  Do you like not paying your bills?  This is what happens when you don't PAY WHAT YOU OWE!  Get em' Johnny!
-<br /><br />
-Might want to handle that suspended license before someone gets hurt...]]></phrase>
     <phrase title="lpsf_attachment_required" version_id="200" version_string="2.0.0"><![CDATA[An attachment is required for this form.]]></phrase>
     <phrase title="lpsf_button_label" version_id="20300" version_string="2.0.3"><![CDATA[Button Label]]></phrase>
     <phrase title="lpsf_clear_all_responses" version_id="20300" version_string="2.0.3"><![CDATA[Clear All Responses]]></phrase>

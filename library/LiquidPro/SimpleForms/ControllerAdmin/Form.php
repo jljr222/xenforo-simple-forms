@@ -760,21 +760,6 @@ class LiquidPro_SimpleForms_ControllerAdmin_Form extends LiquidPro_SimpleForms_C
 	        XenForo_ControllerResponse_Redirect::SUCCESS,
 	        XenForo_Link::buildAdminLink('forms')
 	    );
-	}	
-	
-	/**
-	 * Resets local license key
-	 * 
-	 * @return XenForo_ControllerResponse_Abstract
-	 */
-	public function actionResetLocalKey()
-	{
-	    LiquidPro_SimpleForms_Option_LicenseKey::resetLocalKey();
-	    
-	    return $this->responseRedirect(
-	        XenForo_ControllerResponse_Redirect::SUCCESS,
-	        XenForo_Link::buildAdminLink('forms')
-	    );
 	}
 	
 	protected function _getDb()
