@@ -16,5 +16,6 @@ class LiquidPro_SimpleForms_ViewPublic_Form_AddTemplateField extends XenForo_Vie
 		}
 		
 		$this->_params('templateOptions') = $templateOptions;
+		return;
 	}
 }

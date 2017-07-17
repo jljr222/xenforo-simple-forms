@@ -58,5 +58,6 @@ class LiquidPro_SimpleForms_ViewPublic_Form_Respond extends XenForo_ViewPublic_B
 			    }
 			}
 		}
+		return;
 	}
 }
