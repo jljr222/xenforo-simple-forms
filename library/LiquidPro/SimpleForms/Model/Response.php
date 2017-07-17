@@ -132,13 +132,9 @@ class LiquidPro_SimpleForms_Model_Response extends XenForo_Model
 		
 		// delete response fields
 		$db->query('
-			DELETE FROM `lpsf_response_field` 
-			WHERE `response_id` IN (
-				SELECT 
-					`response_id` 
-				FROM `lpsf_response` 
-				WHERE `user_id` = ?	
-			)
+			DELETE `lpsf_response_field` FROM `lpsf_response_field` 
+			NATURAL JOIN `lpsf_response`
+			WHERE `user_id` = ?
 		', $userId);
 		
 		// delete responses
