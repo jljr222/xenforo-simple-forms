@@ -66,4 +66,16 @@ abstract class LiquidPro_SimpleForms_Install_Abstract
 
 		return $this->_db;
 	}
+
+	public function addIndex($table, $index, array $columns)
+	{
+		$db = $this->_getDb();
+		if (!$db->fetchRow('SHOW INDEX FROM `'.$table.'` WHERE Key_name = ?', $index))
+		{
+			$cols = '(`'. implode('`,`', $columns). '`)';
+			$db->query('ALTER TABLE `'.$table.'` add index `'.$index.'` '. $cols);
+			return true;
+		}
+		return false;
+	}
 }
